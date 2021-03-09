@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="100"
+   height="100"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg883"
+   sodipodi:docname="circle1.svg"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)">
+  <defs
+     id="defs877" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="44.771694"
+     inkscape:cy="35.854286"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:pagecheckerboard="true"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata880">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1755"
+       style="fill:#ffffff;fill-rule:evenodd"
+       d="M 49.947266 0 A 50 50 0 0 0 0 50 A 50 50 0 0 0 50 100 A 50 50 0 0 0 81.443359 88.873047 L 78.300781 84.986328 A 45 45 0 0 1 50 95 A 45 45 0 0 1 5 50 A 45 45 0 0 1 49.826172 5 A 45 45 0 0 1 50 5 A 45 45 0 0 1 95 50 L 100 50 A 50 50 0 0 0 50 0 A 50 50 0 0 0 49.947266 0 z M 99.773438 54.75 A 50 50 0 0 1 99.734375 55.140625 A 50 50 0 0 0 99.773438 54.75 z M 99.572266 56.521484 A 50 50 0 0 1 99.517578 56.917969 A 50 50 0 0 0 99.572266 56.521484 z M 99.308594 58.285156 A 50 50 0 0 1 99.230469 58.736328 A 50 50 0 0 0 99.308594 58.285156 z M 95.931641 69.755859 A 50 50 0 0 1 95.515625 70.693359 A 50 50 0 0 0 95.931641 69.755859 z M 94.980469 71.833984 A 50 50 0 0 1 94.753906 72.296875 A 50 50 0 0 0 94.980469 71.833984 z M 92.072266 77.015625 A 50 50 0 0 1 91.460938 77.945312 A 50 50 0 0 0 92.072266 77.015625 z M 88.945312 81.355469 A 50 50 0 0 1 88.570312 81.816406 A 50 50 0 0 0 88.945312 81.355469 z M 84.523438 86.167969 A 50 50 0 0 1 84.255859 86.419922 A 50 50 0 0 0 84.523438 86.167969 z " />
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+NOTES:
+- linear gradients for fog isn't completely accurate, approximations of closest/furthest points on triangle are made to be one vertices, doesn't consider points on edges of tri
+- tri face colors (pre-fog shader) are approximated to be one solid color
+
+POTENTIAL OPTIMIZATIONS:
+1. draw adjacent triangles as one polygon in canvas
+2. approximate triangles, combining adjacent orthagonal trianges (or approximately orthagonal to a certain threshold angle), removing triangles below certain area threshold
+3. consider ray-tracing approach
+4. sort renderTris by max BB limits so that when iterating negations, can potentially initiate iteration further down the array
+5. avoid computing baseFaceColor (w respect to reflections) of triangles not rendered
+6. cut screenposs of tris that clip off screen to only include regions on screen to avoid calcing negations off screen

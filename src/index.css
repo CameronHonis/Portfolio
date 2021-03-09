@@ -1,13 +1,150 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+  overflow: hidden;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+@font-face{
+  font-family: rubik;
+  src: url(/src/fonts/rubik.woff2);
+
+}
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	line-height: 1;
+  color: rgb(255,255,255);
+  background: linear-gradient(180deg, rgb(97,97,112), rgb(15,15,30));
+  height: 100vh;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+* {
+  box-sizing: border-box;
+  font-family: rubik !important;
+  text-transform: uppercase;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+/* RESET + GENERAL ^^^ */
+/* HEADER vvv */
+#header {
+  width: 100vw;
+  height: 11.38vw;
+  background: url(/src/img/banner3blurred.png);
+  background-color: rgba(0,0,0,.3);
+  background-blend-mode: multiply;
+  background-size: cover;
+  box-shadow: 0px .4vw .4vw rgba(0, 0, 0, 0.25);
+}
+
+#header h1 {
+  position: absolute;
+  left: 1vw;
+  top: 1vw;
+  font-size: 6vw;
+}
+
+#header h3 {
+  position: absolute;
+  left: 20vw;
+  top: 7vw;
+  font-size: 2.4vw;
+}
+
+.headerButton {
+  position: absolute;
+  background: transparent;
+  color: white;
+  transform: translate(-50%, -100%);
+  -webkit-transform: translate(-50%, -100%);
+  height: 5vw;
+  padding-top: 1.5vw;
+  padding-left: 2vw;
+  padding-right: 2vw;
+  cursor: pointer;
+  top: 11.38vw;
+  font-size: 2vw;
+  border-width: 0px;
+  border-bottom-width: .5vw;
+}
+
+.headerButton:active, .headerButton:focus {
+  outline: none;
+}
+
+#projectsButton {
+  left: 60vw;
+}
+
+#skillsButton {
+  left: 75.5vw;
+}
+
+#contactButton {
+  left: 90vw;
+}
+
+/* HEADER ^^^ */
+/* TERRAIN vvv */
+
+#terrain {
+  background: linear-gradient(
+    180deg
+    , rgb(97,97,112), rgb(15,15,30));
+  width: 100vw;
+  height: calc(100vh - 11.38vw);
+  position: absolute;
+  z-index: -1;
+}
+
+/* TERRAIN ^^^ */
+/* PROJECTS vvv */
+
+.circle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 60vh;
+  left: 50vw;
+  opacity: .5;
 }
