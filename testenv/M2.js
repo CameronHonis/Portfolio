@@ -146,6 +146,14 @@ var M2 = /** @class */ (function () {
                 + Helpers_1.Helpers.roundToPow(this.y1, y1Pow - sigFigs + 1) + ") ]";
         }
     };
+    M2.prototype.hash = function () {
+        if (this.x0 < this.x1 || (this.x0 === this.x1 && this.y0 < this.y1)) {
+            return "M2[" + this.x0 + " " + this.y0 + " " + this.x1 + " " + this.y1 + "]";
+        }
+        else {
+            return "M2[" + this.x1 + " " + this.y1 + " " + this.x0 + " " + this.y0 + "]";
+        }
+    };
     return M2;
 }());
 exports.M2 = M2;

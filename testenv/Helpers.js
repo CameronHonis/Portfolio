@@ -125,6 +125,31 @@ var Helpers = /** @class */ (function () {
         var final = interpDotGrads(topVal, botVal, y - y0);
         return final;
     };
+    // clones object but keeps references to classes
+    Helpers.deepCopy = function (obj) {
+        return this.deepCopyRecur(obj, {}, new Set());
+    };
+    Helpers.deepCopyRecur = function (obj, rtnObj, objHistory) {
+        if (!obj || typeof obj !== "object") {
+            return obj;
+        }
+        objHistory.add(obj);
+        for (var _i = 0, _a = Object.entries(obj); _i < _a.length; _i++) {
+            var _b = _a[_i], key = _b[0], val = _b[1];
+            if (val === null || val.constructor.name !== "Object" || objHistory.has(val)) {
+                rtnObj[key] = val;
+            }
+            else {
+                rtnObj[key] = val instanceof Array ? [] : {};
+                this.deepCopyRecur(val, rtnObj[key], objHistory);
+            }
+        }
+        return rtnObj;
+    };
+    // fits index to array, prevents index overflows (i.e. input: idx = -1, arrSize = 3 --> output: 2)
+    Helpers.fitIndex = function (idx, arrSize) {
+        return (idx + (idx < 0 ? -Math.floor(idx / arrSize) : 1) * arrSize) % arrSize;
+    };
     return Helpers;
 }());
 exports.Helpers = Helpers;

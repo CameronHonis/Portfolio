@@ -114,4 +114,30 @@ export class Helpers {
     const final: number = interpDotGrads(topVal, botVal, y - y0);
     return final;
   }
+
+  // clones object but keeps references to classes
+  static deepCopy(obj: Object): Object {
+    return this.deepCopyRecur(obj, {}, new Set());
+  }
+
+  private static deepCopyRecur(obj: Object, rtnObj: Object, objHistory: Set<Object>): Object {
+    if (!obj || typeof obj !== "object") {
+      return obj;
+    }
+    objHistory.add(obj);
+    for (const [ key, val ] of Object.entries(obj)) {
+      if (val === null || val.constructor.name !== "Object" || objHistory.has(val)) {
+        rtnObj[key] = val;
+      } else {
+        rtnObj[key] = val instanceof Array ? [] : {};
+        this.deepCopyRecur(val, rtnObj[key], objHistory);
+      }
+    }
+    return rtnObj;
+  }
+
+  // fits index to array, prevents index overflows (i.e. input: idx = -1, arrSize = 3 --> output: 2)
+  static fitIndex(idx: number, arrSize: number): number {
+    return (idx + (idx < 0 ? -Math.floor(idx/arrSize) : 1)*arrSize) % arrSize;
+  }
 }

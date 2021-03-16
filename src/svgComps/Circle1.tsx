@@ -18,7 +18,8 @@ export const Circle1: React.FC<Props> = ({ reff, pathStyle={} }) => {
       ref={reff}
     >
       <path
-        style={{fill:"#ffffff",fillRule:"evenodd", ...pathStyle}}
+        className="circlePath"
+        style={{fill:"rgb(255,255,255)",fillRule:"evenodd", width: 0, height: 0, ...pathStyle}}
         d="M 49.947266 0 A 50 50 0 0 0 0 50 A 50 50 0 0 0 50 100 A 50 50 0 0 0 81.443359 88.873047 L 78.300781 84.986328 
         A 45 45 0 0 1 50 95 A 45 45 0 0 1 5 50 A 45 45 0 0 1 49.826172 5 A 45 45 0 0 1 50 5 A 45 45 0 0 1 95 50 L 100 50 
         A 50 50 0 0 0 50 0 A 50 50 0 0 0 49.947266 0 z M 99.773438 54.75 A 50 50 0 0 1 99.734375 55.140625 A 50 50 0 0 0 

@@ -1,8 +1,5 @@
 "use strict";
 exports.__esModule = true;
-var M2_1 = require("./M2");
-var Tri_1 = require("./Tri");
-var V2_1 = require("./V2");
 // HELPERS --------------------------------------------------
 // --- sciNot -----------------------------------------------
 // console.log(Helpers.sciNot(1.234567, 3)); // expected 1.23
@@ -38,6 +35,14 @@ var V2_1 = require("./V2");
 // math.atan2 10^8 in ~1621ms
 // Helpers.atan2 10^8 in ~5353ms
 // damn
+// --- fitIndex ---------------------------------------------
+// console.log(Helpers.fitIndex(1,3)); //expect 1
+// console.log(Helpers.fitIndex(-1, 3)); // expect 2
+// console.log(Helpers.fitIndex(3, 3)); //expect 0
+// console.log(Helpers.fitIndex(4,3)); //expect 1
+// console.log(Helpers.fitIndex(6, 3)); //expect 0
+// console.log(Helpers.fitIndex(-3, 3)); //expect 0
+// console.log(Helpers.fitIndex(-4, 3)); //expect 2
 // V3 -------------------------------------------------------
 // console.log(new V3(1.1111,.00012345678,3000000.1).toString()); // expect <1.111, .0001234, 3000000>
 // console.log(new V3(1.1111, .00012345678, 3000000).toString(2)); // expect <1.1, .00012, 3000000>
@@ -120,13 +125,13 @@ var V2_1 = require("./V2");
 // console.log(new M2(new V2(0,0), new V2(1,0)).collinear(new V2(.5,-.0006)));
 // console.log(new M2(new V2(0,0), new V2(1,1)).collinear(new V2(-1,-1)));
 // Tri -------------------------------------------------------
-console.time();
-var tri0 = new Tri_1.Tri(new V2_1.V2(0, 0), new V2_1.V2(0, 2), new V2_1.V2(2, 0));
-var tri1 = new Tri_1.Tri(new V2_1.V2(-2, -2), new V2_1.V2(-2, 10), new V2_1.V2(10, -2));
-for (var i = 0; i < 100; ++i) {
-    tri0.negate(tri1);
-}
-console.timeEnd();
+// console.time();
+// const tri0: Tri = new Tri(new V2(0,0), new V2(0,2), new V2(2,0));
+// const tri1: Tri = new Tri(new V2(-2,-2), new V2(-2,10), new V2(10,-2));
+// for (let i = 0; i < 100; ++i) {
+//   tri0.negate(tri1);
+// }
+// console.timeEnd(); 
 // console.log(tri0.pointInside(new V2(.5,.5)));
 // console.log(tri0.pointInside(new V2(0,0)));
 // console.log(tri0.pointInside(new V2(1,1)));
@@ -208,21 +213,46 @@ console.timeEnd();
 // console.log(bgColor.add(baseColor.add(bgColor.scale(-1)).scale(opacity)));
 // const lightCam: M4 = new M4().rotateZXY(0,-Math.PI/8,-Math.PI/8);
 // console.log(lightCam.upVector.toString());
-var l0 = new M2_1.M2(0, 0, 5, 5);
-var minMax = [2, 4];
-var triA = new Tri_1.Tri(new V2_1.V2(5.5, 5.5), new V2_1.V2(5.5, 0), new V2_1.V2(0, 5.5));
-var dDis = minMax[1] - minMax[0];
-var dX = l0.x1 - l0.x0;
-var dY = l0.y1 - l0.y0;
-l0.negateFromTri(triA).forEach(function (v) {
-    var newMin, newMax;
-    if (dX) {
-        newMin = (v.x0 - l0.x1) / dX * dDis + minMax[1];
-        newMax = (v.x1 - l0.x0) / dX * dDis + minMax[0];
-    }
-    else {
-        newMin = (v.y0 - l0.y1) / dY * dDis + minMax[1];
-        newMax = (v.y1 - l0.y0) / dY * dDis + minMax[0];
-    }
-    console.log(v, newMin, newMax);
-});
+// const l0: M2 = new M2(0,0,5,5);
+// const minMax: [number,number] = [2,4];
+// const triA: Tri = new Tri(new V2(5.5,5.5), new V2(5.5,0), new V2(0,5.5));
+// const dDis: number = minMax[1] - minMax[0];
+// const dX: number = l0.x1 - l0.x0;
+// const dY: number = l0.y1 - l0.y0;
+// l0.negateFromTri(triA).forEach(v => {
+//   let newMin: number, newMax: number;
+//   if (dX) {
+//     newMin = (v.x0 - l0.x1)/dX * dDis + minMax[1];
+//     newMax = (v.x1 - l0.x0)/dX * dDis + minMax[0];
+//   } else {
+//     newMin = (v.y0 - l0.y1)/dY * dDis + minMax[1];
+//     newMax = (v.y1 - l0.y0)/dY * dDis + minMax[0];
+//   }
+//   console.log(v, newMin, newMax);
+// });
+// const averageAngles = (angles: [number, number][]) => {
+//   let rtn: number = 0;
+//   let rtnWeight: number = 0;
+//   for (const [ angle, weight ] of angles) {
+//     const da: number = rtn - angle;
+//     console.log(rtn, angle);
+//     if (Math.abs(da) > Math.PI) {
+//       rtn -= Math.sign(da)*2*Math.PI;
+//     }
+//     console.log(rtn, angle,"\n");
+//     rtn = rtn*rtnWeight/(rtnWeight + weight) + angle*weight/(rtnWeight + weight);
+//     rtnWeight += weight;  
+//   }
+//   return rtn;
+// }
+// console.log(averageAngles([[0,.5],[3*Math.PI/2-.01,.5]]),"\n\n\n");
+// console.log(averageAngles([[3*Math.PI/2-.01,.5],[0,.5]]),"\n\n\n");
+// const window = {
+//   innerWidth: 1000,
+//   innerHeight: 500,
+// }
+// const toSVGspace = (v2: V2): V2 => {
+//   const bodySize: V2 = new V2(window.innerWidth, window.innerHeight - .1*window.innerWidth);
+//   return v2.add(0, -.1*window.innerWidth).parallelProduct(1/bodySize.x, 1/bodySize.y).scale(100);
+// }
+// console.log(toSVGspace(new V2(500,300)).toString());

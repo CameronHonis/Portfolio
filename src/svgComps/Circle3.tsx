@@ -17,8 +17,8 @@ export const Circle3: React.FC<Props> = ({ reff }) => {
       ref={reff}
       > 
         <path
-          id="path1853"
-          style={{fill:"#ffffff",fillRule:"evenodd",fillOpacity:1}}
+          className="circlePath"
+          style={{fill:"#ffffff",fillRule:"evenodd",fillOpacity:1, width: 0, height: 0}}
           d="M 90 50 A 40 40 0 0 1 89.960938 51.767578 L 99.951172 52.208984 A 50 50 0 0 0 100 50 L 90 50 z M 89.845703 53.486328 
           A 40 40 0 0 1 89.654297 55.244141 L 99.568359 56.554688 A 50 50 0 0 0 99.810547 54.357422 L 89.845703 53.486328 z M 89.392578 
           56.947266 A 40 40 0 0 1 89.044922 58.679688 L 98.808594 60.849609 A 50 50 0 0 0 99.240234 58.683594 L 89.392578 56.947266 z 

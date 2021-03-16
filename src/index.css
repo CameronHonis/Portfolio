@@ -24,17 +24,16 @@ article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
 	display: block;
 }
-@font-face{
-  font-family: rubik;
-  src: url(/src/fonts/rubik.woff2);
-
-}
 body {
 	line-height: 1;
   color: rgb(255,255,255);
   background: linear-gradient(180deg, rgb(97,97,112), rgb(15,15,30));
   height: 100vh;
 }
+#root {
+  height: 100vh;
+}
+
 ol, ul {
 	list-style: none;
 }
@@ -52,8 +51,14 @@ table {
 }
 * {
   box-sizing: border-box;
-  font-family: rubik !important;
+  font-family: 'Orbitron', sans-serif !important;
+  letter-spacing: .1rem;
   text-transform: uppercase;
+}
+
+*::selection {
+  background-color: black;
+  color: rgb(50,255,255);
 }
 
 .noselect {
@@ -70,7 +75,7 @@ table {
 /* HEADER vvv */
 #header {
   width: 100vw;
-  height: 11.38vw;
+  height: 10vw;
   background: url(/src/img/banner3blurred.png);
   background-color: rgba(0,0,0,.3);
   background-blend-mode: multiply;
@@ -82,14 +87,14 @@ table {
   position: absolute;
   left: 1vw;
   top: 1vw;
-  font-size: 6vw;
+  font-size: 4.5vw;
 }
 
 #header h3 {
   position: absolute;
-  left: 20vw;
-  top: 7vw;
-  font-size: 2.4vw;
+  left: 15vw;
+  top: 6.5vw;
+  font-size: 2vw;
 }
 
 .headerButton {
@@ -98,13 +103,16 @@ table {
   color: white;
   transform: translate(-50%, -100%);
   -webkit-transform: translate(-50%, -100%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
   height: 5vw;
   padding-top: 1.5vw;
   padding-left: 2vw;
   padding-right: 2vw;
   cursor: pointer;
-  top: 11.38vw;
-  font-size: 2vw;
+  top: 10vw;
+  font-size: 1.75vw;
   border-width: 0px;
   border-bottom-width: .5vw;
 }
@@ -133,7 +141,7 @@ table {
     180deg
     , rgb(97,97,112), rgb(15,15,30));
   width: 100vw;
-  height: calc(100vh - 11.38vw);
+  height: calc(100vh - 10vw);
   position: absolute;
   z-index: -1;
 }
@@ -143,8 +151,228 @@ table {
 
 .circle {
   position: absolute;
-  transform: translate(-50%, -50%);
-  top: 60vh;
+  top: 55vh;
   left: 50vw;
-  opacity: .5;
+}
+
+#projectScreenSVG {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  left: 50vw;
+  top: 55vh;
+  z-index: 2;
+  -webkit-filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+  filter: drop-shadow( 0px 3px 10px rgba(0, 0, 0, .7));
+}
+
+#projectScreenSVG path {
+  cursor: pointer;
+}
+
+.selectCircle {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  top: calc(100% - 80px);
+  cursor: pointer;
+}
+
+.selectCircle svg {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  width: 2.5vh;
+  height: 2.5vh;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+}
+
+.annotationSVG {
+  position: absolute;
+  width: 100vw;
+  height: calc(100vh - 10vw);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.annotationSVG ellipse {
+  fill: rgb(255,255,255);
+}
+
+.annotationSVG path {
+  stroke-width: .3;
+  stroke: rgb(255,255,255);
+  fill: none;
+}
+.annotation {
+  position: absolute;
+  font-size: 1.6vw;
+  opacity: 0;
+}
+
+.arrowSVG {
+  position: absolute;
+  cursor: pointer;
+}
+
+.arrowSVG path {
+  /* fill: rgb(255,255,255); */
+  fill: none;
+  stroke: rgb(255,255,255);
+  stroke-width: 3px;
+}
+
+.arrowAnnotation {
+  position: absolute;
+  transform: translate(-50%,-50%);
+  -webkit-transform: translate(-50%,-50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+#projectAnnotation {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  -webkit-transform: translate(-50%, -100%);
+  -moz-transform: translate(-50%, -100%);
+  -ms-transform: translate(-50%, -100%);
+  -o-transform: translate(-50%, -100%);
+  left: 50vw;
+  top: calc(100% - 120px);
+  font-size: 2vw;
+}
+
+/* Projects ^^^ */
+/* Skills vvv */
+
+#skills {
+  width: 100vw;
+  height: calc(100vh - 10vw);
+  backdrop-filter: blur(4px);
+}
+
+#skillFrame {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+}
+
+#skillFrame p {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 13vw;
+  top: 2vw;
+  font-size: 1.5vw;
+}
+
+.skillOutline {
+  width: 22vw;
+  height: 4vw;
+}
+
+.skillIcon {
+  position: absolute;
+  width: 3.2vw;
+  height: 3.2vw;
+  left: .5vw;
+  top: .4vw;
+}
+
+.skillTitleOutline {
+  position: absolute;
+  width: 18vw;
+  height: 3.5vw;
+  transform: translate(-50%, -50%);
+  top: 3vw;
+}
+
+.skillsTitle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 3vw;
+  font-size: 1.6vw;
+}
+
+#languagesTitle {
+  left: 16.6vw;
+}
+
+#frameworksTitle {
+  left: 50vw;
+}
+
+#otherTitle {
+  left: 83.4vw;
+}
+
+/* Skills ^^^ */
+/* Contact vvv */
+
+#contact {
+  width: 100vw;
+  height: calc(100vh - 10vw);
+  backdrop-filter: blur(4px);
+}
+
+#about {
+  position: absolute;
+  font-size: 1.7vw;
+  text-transform: none;
+  line-height: 2.2vw;
+  width: 72.5vw;
+  left: 25vw;
+  top: 10vw;
+}
+
+#avatarFrame {
+  position: absolute;
+  width: 20vw;
+  height: 30vw;
+  left: 2.5vw;
+  top: 3vw;
+}
+
+#avatar {
+  position: absolute;
+  z-index: 2;
+  background: url(/src/img/avatar1.png);
+  opacity: 0;
+  background-size: cover;
+  width: 98%;
+  height: 98%;
+  top: 2%;
+}
+
+.social {
+  position: absolute;
+  width: 4vw;
+  height: 4vw;
+  top: 4vw;
+  cursor: pointer;
+}
+
+#githubIcon {
+  left: 25vw;
+}
+
+#linkedinIcon {
+  left: 31vw;
 }

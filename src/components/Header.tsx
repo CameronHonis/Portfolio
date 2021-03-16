@@ -1,9 +1,9 @@
-import React, { SetStateAction } from "react";
-import { AppState, Section } from "./App";
+import React from "react";
+import { AppStateAction, AppStateActionType, AppState, Section } from "../App";
 
 export interface Props {
   appState: AppState;
-  setAppState: React.Dispatch<SetStateAction<AppState>>;
+  appStateDispatch: React.Dispatch<AppStateAction>;
 }
 
 export interface Refs {
@@ -32,7 +32,7 @@ export const initState: HeaderState = {
   mouseOver: undefined,
 }
 
-export const Header: React.FC<Props> = ({ appState, setAppState }) => {
+export const Header: React.FC<Props> = ({ appState, appStateDispatch }) => {
 
   const [ headerState, setHeaderState ] = React.useState<HeaderState>(initState);
   let { current: refs } = React.useRef<Refs>(initRefs);
@@ -81,8 +81,9 @@ export const Header: React.FC<Props> = ({ appState, setAppState }) => {
     }
   }
 
-  const click = (e: React.MouseEvent): void => {
-
+  const click = (e: React.MouseEvent, newSection: Section): void => {
+    if (appState.section === newSection) { return; }
+    appStateDispatch({type: AppStateActionType.SetSection, data: newSection});
   }
 
   return(
@@ -95,7 +96,7 @@ export const Header: React.FC<Props> = ({ appState, setAppState }) => {
         ref={refs.projectsButton}
         onMouseOver={e => mouseOver(e)}
         onMouseLeave={e => mouseLeave(e)}
-        onClick={e => click(e)}
+        onClick={e => click(e, Section.Projects)}
       >Projects</button>
       <button 
         id="skillsButton" 
@@ -103,7 +104,7 @@ export const Header: React.FC<Props> = ({ appState, setAppState }) => {
         ref={refs.skillsButton}
         onMouseOver={e => mouseOver(e)}
         onMouseLeave={e => mouseLeave(e)}
-        onClick={e => click(e)}
+        onClick={e => click(e, Section.Skills)}
       >Skills</button>
       <button 
         id="contactButton" 
@@ -111,7 +112,7 @@ export const Header: React.FC<Props> = ({ appState, setAppState }) => {
         ref={refs.contactButton}
         onMouseOver={e => mouseOver(e)}
         onMouseLeave={e => mouseLeave(e)}
-        onClick={e => click(e)}
+        onClick={e => click(e, Section.Contact)}
       >Contact</button>
     </section>
   )

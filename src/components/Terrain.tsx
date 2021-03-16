@@ -1,17 +1,16 @@
 import React from "react";
-import { M4 } from "./models/M4";
-import { V2 } from "./models/V2";
-import { V3 } from "./models/V3";
-import { Helpers } from "./models/Helpers";
-import { Tri } from "./models/Tri";
-import { M2 } from "./models/M2";
-import { isJsxAttribute } from "typescript";
+import { M4 } from "../models/M4";
+import { V2 } from "../models/V2";
+import { V3 } from "../models/V3";
+import { Helpers } from "../models/Helpers";
+import { Tri } from "../models/Tri";
+import { M2 } from "../models/M2";
+import { AppState } from "../App";
 
 const terrainWidth: number = 170;
 const tileWidth: number = 8;
 const tileHeight: number = 10;
-const camSpeed: number = 20;
-const screenSize: V2 = new V2(window.innerWidth, window.innerHeight - .114*window.innerWidth);
+const maxCamSpeed: number = 20;
 const camDirection: V3 = new V3(0, 1, -.05);
 const renderDis: number = 220;
 const perlinWeights: number[] = [.42, .08];
@@ -28,7 +27,12 @@ const maxDotSize: number = .3;
 const triColorDark: V3 = new V3(0, 0, 0);
 const triColorLight: V3 = new V3(20, 20, 80);
 const triMaxOpacity: number = .7;
-const debugging: boolean = true;
+const introAnimTime: [number, number] = [0, 3];
+const debugging: boolean = false;
+
+export interface Props {
+  appState: AppState;
+}
 
 export interface Refs {
   canvas: React.MutableRefObject<HTMLCanvasElement>;
@@ -38,11 +42,21 @@ export interface Refs {
   terrainDespawnWatch: {[index: string]: number} // string=vertex hash, value=time in despawnWatch
   camera: M4;
   cameraFOV: V2;
+  cameraSpeed: number;
   t: number;
   paused: boolean;
   perlinSeed: number[]
   fpsRA: number;
   framesCount: number;
+  highlights: Set<{
+    highlightPoss: V2[];
+    highlightSpeed: V2;
+    highlightRadius: number;
+    highlightBirth: number;
+    maxRadius: number;
+  }>;
+  nextHighlightTime: number;
+  scaffoldColor: V3;
 }
 
 export const initRefs: Refs = {
@@ -51,14 +65,18 @@ export const initRefs: Refs = {
   terrainDespawnWatch: {},
   camera: new M4(new V3(0,0,0), camDirection),
   cameraFOV: new V2(xFOV, xFOV*Math.min(1.2, .8*window.innerHeight/window.innerWidth)),
+  cameraSpeed: 0,
   t: 0,
-  paused: true,
+  paused: false,
   perlinSeed: [],
   fpsRA: 0,
   framesCount: 0,
+  highlights: new Set(),
+  nextHighlightTime: 8,
+  scaffoldColor: new V3(0,0,0),
 }
 
-export const Terrain: React.FC = () => {
+export const Terrain: React.FC<Props> = ({ appState }) => {
   let { current: refs } = React.useRef<Refs>(initRefs);
 
   React.useEffect(() => {
@@ -102,7 +120,13 @@ export const Terrain: React.FC = () => {
     render(0);
   },[]); //eslint-disable-line
 
+  React.useEffect(() => {
+    const heightWidthRatio: number = appState.viewportSnappedSize.y/appState.viewportSnappedSize.x;
+    refs.cameraFOV = new V2(xFOV, xFOV*Math.min(1.2, heightWidthRatio));
+  },[appState.viewportSnappedSize]); //eslint-disable-line
+
   const render = (dt: number) => {
+    const screenSize: V2 = new V2(window.innerWidth, window.innerHeight - .1*window.innerWidth);
     //render viewport bounding box
     const viewBB: [V3, V3] = refs.camera.getViewportBoundingBox(refs.cameraFOV, renderDis); //TODO: look into why z-axis bb was bigger than x for FOV of <pi/2, pi/4>
     // console.log(refs.camera.position.toString(), viewBB[0].toString(), viewBB[1].toString());
@@ -119,8 +143,8 @@ export const Terrain: React.FC = () => {
         for (let y = yTileRange[0]; y <= yTileRange[1]; y += tileHeight) {
           if (Math.abs(x) > terrainWidth/2) { continue; }
           if (!(x + " " + y in refs.terrainPoints)) {
-            const perlinHeight: number = perlinMax*(perlinWeights[0]*Helpers.perlinR2(perlinFreqs[0]*x, perlinFreqs[0]*y, refs.perlinSeed) 
-              + perlinWeights[1]*Helpers.perlinR2(perlinFreqs[1]*x, perlinFreqs[1]*y, refs.perlinSeed) - .5);
+            const perlinHeight: number = perlinMax*(perlinWeights[0]*Helpers.perlinR2(perlinFreqs[0]*x, perlinFreqs[0]*y/1.5, refs.perlinSeed) 
+              + perlinWeights[1]*Helpers.perlinR2(perlinFreqs[1]*x, perlinFreqs[1]*y/1.5, refs.perlinSeed) - .5);
             const canyonHeight: number = canyonMax*(1 - 1/(1+Math.pow(Math.E, Math.abs(canyonDropoff*x) - 4)));
             refs.terrainPoints[x + " " + y] = new V3(x, y, perlinHeight + canyonHeight - defaultHeight);
             //refs.terrainPoints[x + " " + y] = new V3(x, y, -defaultHeight); //flat terrain
@@ -152,11 +176,49 @@ export const Terrain: React.FC = () => {
     // refs.terrainPoints["16 90"] = new V3(16, 90, -3);
     if (!refs.paused) {
       const incrementPhys = (): void => {
-        refs.t += .01
-        refs.camera = new M4(
-          refs.camera.position.add(new V3(0, dt*camSpeed, 0)), 
-          refs.camera.position.add(new V3(0, dt*camSpeed, 0).add(camDirection))
-        );
+        refs.t += dt;
+        if (refs.t < introAnimTime[0] || refs.t > introAnimTime[1]) {
+          refs.cameraSpeed = Math.min(maxCamSpeed, refs.cameraSpeed + .1);
+          refs.camera = new M4(
+            refs.camera.position.add(new V3(0, dt*refs.cameraSpeed, 0)), 
+            refs.camera.position.add(new V3(0, dt*refs.cameraSpeed, 0).add(camDirection))
+          );
+        }
+        for (const highlightObj of refs.highlights) {
+          if (refs.t - highlightObj.highlightBirth > 5) {
+            refs.highlights.delete(highlightObj);
+            continue;
+          }
+          for (let j = 0; j < highlightObj.highlightPoss.length; ++j) {
+            highlightObj.highlightPoss[j] = highlightObj.highlightPoss[j].add(highlightObj.highlightSpeed.scale(dt));
+          }
+          highlightObj.highlightRadius = 50*(1 - 64*Math.pow((refs.t - highlightObj.highlightBirth)/5 - .5, 6));
+        }
+        const rt: number = (refs.t % 12) / 12;
+        const gt: number = ((refs.t + 4) % 12) / 12;
+        const bt: number = ((refs.t + 8) % 12) / 12;
+        const r: number = 50 + 205*(1 - Math.max(0, Math.min(1, -4*Math.abs(rt - .5) + 1.5)));
+        const g: number = 50 + 205*(1 - Math.max(0, Math.min(1, -4*Math.abs(gt - .5) + 1.5)));
+        const b: number = 50 + 205*(1 - Math.max(0, Math.min(1, -4*Math.abs(bt - .5) + 1.5)));
+        refs.scaffoldColor = new V3(r, g, b);
+        if (refs.t > refs.nextHighlightTime && (refs.t < introAnimTime[0] || refs.t > introAnimTime[1])) {
+          refs.nextHighlightTime = Math.random()*5 + refs.t;
+          const clusterCenter: V2 = new V2(refs.camera.position.x + (Math.random() - .5)*terrainWidth*1.5, refs.camera.position.y + Math.random()*renderDis*1.2);
+          const clusterTarget: V2 = new V2(refs.camera.position.x + (Math.random() - .5)*terrainWidth*.5, refs.camera.position.y + (.5 + Math.random())*renderDis);
+          const highlightSpeed = clusterTarget.add(clusterCenter.scale(-1)).unit().scale(60 + Math.random()*60);
+          const cluster: V2[] = [];
+          for (let i = 0; i < Math.random()*3; ++i) {
+            const offsetAngle: number = Math.random()*Math.PI*2;
+            cluster.push(clusterCenter.add(new V2(Math.cos(offsetAngle), Math.sin(offsetAngle)).scale(Math.sqrt(Math.random())*100)));
+          }
+          refs.highlights.add({
+            highlightBirth: refs.t,
+            highlightPoss: cluster,
+            highlightRadius: 0,
+            highlightSpeed,
+            maxRadius: Math.random()*80,
+          })
+        }
       }; incrementPhys();
     }
     let vertexCount: number = 0;
@@ -204,28 +266,95 @@ export const Terrain: React.FC = () => {
             furthest = [tri.p0, triDiss.x];
           }
         }
+        const getTriOpacities = (minDis: number, maxDis: number): [number, number] => {
+          if (minDis > renderDis) { return [0, 0]; }
+          const rtn: [number, number] = [1, 1];
+          if (refs.t > introAnimTime[0] && refs.t < introAnimTime[1]) {
+            const introDur: number = introAnimTime[1] - introAnimTime[0];
+            const introProg: number = (refs.t - introAnimTime[0])/introDur;
+            const relPos0: number = minDis/renderDis;
+            const relPos1: number = maxDis/renderDis;
+            const funcx0: number = 2*introProg - relPos0;
+            const funcx1: number = 2*introProg - relPos1;
+            rtn[0] *= Math.max(0, Math.min(1, funcx0/.7 - .2));
+            rtn[1] *= Math.max(0, Math.min(1, funcx1/.7 - .2));
+          }
+          if (rtn[0]) {
+            rtn[0] *= triMaxOpacity*Math.max(1 - fogMax, Math.min(1, 
+              (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*minDis/fogEnd));
+          }
+          if (rtn[1]) {
+            rtn[1] *= triMaxOpacity*Math.max(1 - fogMax, Math.min(1, 
+              (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*furthest[1]/fogEnd));
+          }
+          return rtn;
+        }
         const grad: CanvasGradient = ctx.createLinearGradient(closest[0].x, closest[0].y, furthest[0].x, furthest[0].y);
-        const opacityClose: number = triMaxOpacity*Math.max(1 - fogMax, Math.min(1, 
-          (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*closest[1]/fogEnd));
-        const opacityFar: number = triMaxOpacity*Math.max(1 - fogMax, Math.min(1, 
-          (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*furthest[1]/fogEnd));
-        const closeColor: V3 = vertexColor(faceColor, opacityClose, closest[0]);
-        const farColor: V3 = vertexColor(faceColor, opacityFar, furthest[0]);
-        grad.addColorStop(0, "rgb(" + closeColor.x + "," + closeColor.y + "," + closeColor.z + ")");
-        grad.addColorStop(1, "rgb(" + farColor.x + "," + farColor.y + "," + farColor.z + ")");
-        ctx.beginPath();
-        ctx.moveTo(tri.p0.x, tri.p0.y);
-        ctx.lineTo(tri.p1.x, tri.p1.y);
-        ctx.lineTo(tri.p2.x, tri.p2.y);
-        ctx.fillStyle = grad;
-        ctx.fill();
-        triCount++;
+        const opacities: [number, number] = getTriOpacities(closest[1], furthest[1]);
+        if (opacities[0] && opacities[1]) {
+          // draw tri
+          const closeColor: V3 = vertexColor(faceColor, opacities[0], closest[0]);
+          const farColor: V3 = vertexColor(faceColor, opacities[1], furthest[0]);
+          grad.addColorStop(0, "rgb(" + closeColor.x + "," + closeColor.y + "," + closeColor.z + ")");
+          grad.addColorStop(1, "rgb(" + farColor.x + "," + farColor.y + "," + farColor.z + ")");
+          ctx.beginPath();
+          ctx.moveTo(tri.p0.x, tri.p0.y);
+          ctx.lineTo(tri.p1.x, tri.p1.y);
+          ctx.lineTo(tri.p2.x, tri.p2.y);
+          ctx.fillStyle = grad;
+          ctx.fill();
+          triCount++;
+        }
+        const tri01: M2 = new M2(tri.p0, tri.p1);
+        const tri02: M2 = new M2(tri.p0, tri.p2);
+        const tri12: M2 = new M2(tri.p1, tri.p2);
+        const tri01Hash: string = tri01.hash();
+        const tri02Hash: string = tri02.hash();
+        const tri12Hash: string = tri12.hash();
+        edgeTris[tri01Hash]--;
+        if (!edgeTris[tri01Hash]) {
+          drawLine(tri01, triDiss.x, triDiss.y);
+        }
+        edgeTris[tri02Hash]--;
+        if (!edgeTris[tri02Hash]) {
+          drawLine(tri02, triDiss.x, triDiss.z);
+        }
+        edgeTris[tri12Hash]--;
+        if (!edgeTris[tri12Hash]) {
+          drawLine(tri12, triDiss.y, triDiss.z);
+        }
+      }
+      const getVertexOpacity = (dis: number, vHash: string): number | null => {
+        let rtn: number = 1;
+        if (refs.t < introAnimTime[1] && refs.t >= introAnimTime[0]) {
+          const introDur: number = introAnimTime[1] - introAnimTime[0];
+          const introProg: number = (refs.t - introAnimTime[0])/introDur;
+          const relPos: number = dis/renderDis;
+          const funcx: number = 2*introProg - relPos;
+          if (funcx < .7) {
+            rtn *= Math.max(0, (funcx)/.7);
+          } else {
+            rtn *= Math.max(0, Math.min(1, -((funcx) - 1)/.3));
+          }
+        } else {
+          rtn *= Math.max(0, Math.min(1, vertexOpacities[vHash]));
+        }
+        rtn *= Math.max(1 - fogMax, Math.min(1, 
+          (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*dis/fogEnd));
+        return rtn;
+      }
+      const getBaseVertexColor = (): V3 => {
+        if (refs.t < introAnimTime[1] && refs.t >= introAnimTime[0]) {
+          return new V3(255,255,255);
+        } else {
+          return refs.scaffoldColor;
+        }
       }
       const drawVertex = (screenPos: V2, dis: number) => { //eslint-disable-line
-        //if (isNaN(screenPos.x) || isNaN(screenPos.y)) { return; }
-        const opacity: number = Math.max(1 - fogMax, Math.min(1, 
-          (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*dis/fogEnd));
-        const color: V3 = vertexColor(new V3(50,255,255), opacity, screenPos);
+        const vHash: string = screenPos.x + " " + screenPos.y;
+        let netOpacity: number | null = getVertexOpacity(dis, vHash);
+        if (!netOpacity || netOpacity <= 0) { return; }
+        const color: V3 = vertexColor(getBaseVertexColor(), netOpacity, screenPos);
         ctx.beginPath();
         ctx.arc(
           screenPos.x,
@@ -241,22 +370,26 @@ export const Terrain: React.FC = () => {
       const drawLine = (line: M2, minDis: number, maxDis: number): void => { //eslint-disable-line
         if (isNaN(line.x0) || isNaN(line.y0)) { return; }
         if (isNaN(line.x1) || isNaN(line.y1)) { return; }
-        const opacity0: number = Math.max(1 - fogMax, Math.min(1,
-          (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*minDis/fogEnd));
-        const opacity1: number = Math.max(1 - fogMax, Math.min(1, 
-          (fogEnd - fogStart*(1 - fogMax))/(fogEnd - fogStart) - fogMax*maxDis/fogEnd));
         const screenPos0: V2 = new V2(line.x0, line.y0);
         const screenPos1: V2 = new V2(line.x1, line.y1);
+        const sp0Hash: string = screenPos0.x + " " + screenPos0.y;
+        const sp1Hash: string = screenPos1.x + " " + screenPos1.y;
+        let netOpacity0: number | null = getVertexOpacity(minDis, sp0Hash);
+        let netOpacity1: number | null = getVertexOpacity(maxDis, sp1Hash);
+        if (!netOpacity0) { netOpacity0 = 0; }
+        if (!netOpacity1) { netOpacity1 = 0; }
+        if (netOpacity0 === 0 && netOpacity1 === 0) { return; }
         const grad: CanvasGradient = ctx.createLinearGradient(line.x0, line.y0, line.x1, line.y1);
-        const color: V3 = vertexColor(new V3(50,255,255), opacity0, screenPos0);
-        const color2: V3 = vertexColor(new V3(50,255,255), opacity1, screenPos1);
+        const baseColor: V3 = getBaseVertexColor();
+        const color: V3 = vertexColor(baseColor, netOpacity0, screenPos0);
+        const color2: V3 = vertexColor(baseColor, netOpacity1, screenPos1);
         grad.addColorStop(0, "rgb(" + color.x + "," + color.y + "," + color.z + ")");
         grad.addColorStop(1, "rgb(" + color2.x + "," + color2.y + "," + color2.z + ")");
         ctx.beginPath();
         ctx.moveTo(line.x0, line.y0);
         ctx.lineTo(line.x1, line.y1);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = anchorLength*maxDotSize/(.5*minDis + .5*maxDis);
+        ctx.lineWidth = .6*anchorLength*maxDotSize/(.5*minDis + .5*maxDis);
         ctx.stroke();
         lineCount++;
         ctx.closePath();
@@ -264,8 +397,28 @@ export const Terrain: React.FC = () => {
       const screenPoss: {[index: string]: V2} = {};
       // 1st idx undefined if inserted then overlapped; 1=screenPoss, 2=diss, 3=colors, 4=vertexHashes
       const sortedTris: [Tri, V3, V3, [string, string, string]][] = [];
+      const edgeTris: {[index: string]: number} = {};
+      const vertexOpacities: {[index: string]: number} = {};
       for (const [ tpHash, tp] of Object.entries(refs.terrainPoints)) { // adds tris sorted by lowest to highest cam dis
         if (!(tpHash in refs.terrainDespawnWatch)) { refs.terrainDespawnWatch[tpHash] = 0; }
+        if (!(tpHash in screenPoss)) {
+          screenPoss[tpHash] = refs.camera.pointToScreenPos(tp, refs.cameraFOV, screenSize);
+        }
+        const tpXY: V2 = new V2(tp.x, tp.y);
+        let highestOpacity: number | undefined = undefined;
+        for (const highlightObj of refs.highlights) {
+          for (const highlightPos of highlightObj.highlightPoss) {
+            const hpDis: number = highlightPos.add(tpXY.scale(-1)).magnitude();
+            if (hpDis >= highlightObj.highlightRadius) { continue; }
+            const hpOpacity: number = 1 - 4*Math.pow(hpDis/highlightObj.highlightRadius - .5, 2);
+            if (!highestOpacity || hpOpacity > highestOpacity) {
+              highestOpacity = hpOpacity;
+            }
+          }
+        }
+        if (highestOpacity) {
+          vertexOpacities[screenPoss[tpHash].x + " " + screenPoss[tpHash].y] = highestOpacity;
+        }
         const dpHash: string = (tp.x + tileWidth) + " " + (tp.y + tileHeight);
         if (!(dpHash in refs.terrainPoints)) { continue; }
         const camTp: V3 = tp.add(refs.camera.position.scale(-1));
@@ -335,9 +488,6 @@ export const Terrain: React.FC = () => {
           const rp: V3 = refs.terrainPoints[rpHash];
           const triNormal: V3 = tp.add(rp.scale(-1)).cross(tp.add(dp.scale(-1)));
           if (triNormal.dot(camTp) < 0) {
-            if (!(tpHash in screenPoss)) {
-              screenPoss[tpHash] = refs.camera.pointToScreenPos(tp, refs.cameraFOV, screenSize);
-            }
             if (!(dpHash in screenPoss)) {
               screenPoss[dpHash] = refs.camera.pointToScreenPos(dp, refs.cameraFOV, screenSize);
             }
@@ -351,9 +501,6 @@ export const Terrain: React.FC = () => {
           const up: V3 = refs.terrainPoints[upHash];
           const triNormal: V3 = tp.add(dp.scale(-1)).cross(tp.add(up.scale(-1)));
           if (triNormal.dot(camTp) < 0) {
-            if (!(tpHash in screenPoss)) {
-              screenPoss[tpHash] = refs.camera.pointToScreenPos(tp, refs.cameraFOV, screenSize);
-            }
             if (!(dpHash in screenPoss)) {
               screenPoss[dpHash] = refs.camera.pointToScreenPos(dp, refs.cameraFOV, screenSize);
             }
@@ -364,110 +511,51 @@ export const Terrain: React.FC = () => {
           }
         }
       }
-      const vertsToDraw: [V2,number][] = [];
-      const linesToDraw: [M2,number,number][] = [];
+      const trisToDraw: [Tri, V3, V3, [string, string, string]][] = [];
+      const verticesToDraw: [V2, number][] = [];
+      // filter sortedTris
       for (let i = sortedTris.length-1; i >= 0; --i) {
         const iTri: Tri = sortedTris[i][0];
+        const drawVertices: [boolean, boolean, boolean] = [true, true, true];
         let overlapped: boolean = false;
-        const iVerts: [boolean,boolean,boolean] = [true,true,true];
-        let iLines: [M2,number,number][] = [];
-        const maxDotR: number = anchorLength*maxDotSize;
-        const i0DotR: number = maxDotR/sortedTris[i][1].x;
-        const i1DotR: number = maxDotR/sortedTris[i][1].y;
-        const i2DotR: number = maxDotR/sortedTris[i][1].z;
-        const i01Start: V2 = iTri.p0.add(iTri.p1.add(iTri.p0.scale(-1)).unit().scale(i0DotR));
-        const i01End: V2 = iTri.p1.add(iTri.p0.add(iTri.p1.scale(-1)).unit().scale(i1DotR));
-        const i02Start: V2 = iTri.p0.add(iTri.p2.add(iTri.p0.scale(-1)).unit().scale(i0DotR));
-        const i02End: V2 = iTri.p2.add(iTri.p0.add(iTri.p2.scale(-1)).unit().scale(i2DotR));
-        const i12Start: V2 = iTri.p1.add(iTri.p2.add(iTri.p1.scale(-1)).unit().scale(i1DotR));
-        const i12End: V2 = iTri.p2.add(iTri.p1.add(iTri.p2.scale(-1)).unit().scale(i2DotR));
-        iLines.push([new M2(i01Start, i01End), sortedTris[i][1].x, sortedTris[i][1].y]); //these could possibly have dis <= 0
-        iLines.push([new M2(i02Start, i02End), sortedTris[i][1].x, sortedTris[i][1].z]);
-        iLines.push([new M2(i12Start, i12End), sortedTris[i][1].y, sortedTris[i][1].z]);
-        for (let j = i-1; j >= 0; --j) {
-          const jTri: Tri = sortedTris[j][0];
-          const iP0Inscribed: boolean = jTri.pointInscribed(iTri.p0);
-          const iP1Inscribed: boolean = jTri.pointInscribed(iTri.p1);
-          const iP2Inscribed: boolean = jTri.pointInscribed(iTri.p2);
-          if (iP0Inscribed) { iVerts[0] = false; }
-          if (iP1Inscribed) { iVerts[1] = false; }
-          if (iP2Inscribed) { iVerts[2] = false; }
-          if (iP0Inscribed && iP1Inscribed && iP2Inscribed) {
-            overlapped = true;
-            break;
+          // not playing introAnim
+          // filter vertices and tris overlapped
+          for (let j = i-1; j >= 0; --j) {
+            const jTri: Tri = sortedTris[j][0];
+            const p0in: boolean = jTri.pointInscribed(iTri.p0);
+            const p1in: boolean = jTri.pointInscribed(iTri.p1);
+            const p2in: boolean = jTri.pointInscribed(iTri.p2);
+            drawVertices[0] = drawVertices[0] && !p0in;
+            drawVertices[1] = drawVertices[1] && !p1in;
+            drawVertices[2] = drawVertices[2] && !p2in;
+            if (p0in && p1in && p2in) {
+              overlapped = true;
+              break;
+            }
           }
-          const iNextLines: [M2,number,number][] = [];
-          for (const iLine of iLines) {
-            const dDis: number = iLine[2] - iLine[1];
-            const dX: number = iLine[0].x1 - iLine[0].x0;
-            const dY: number = iLine[0].y1 - iLine[0].y0;
-            iLine[0].negateFromTri(jTri).forEach(v => {
-              if (v.x0 !== v.x1 || v.y0 !== v.y1) {
-                let dis0: number, dis1: number;
-                if (dX) {
-                  dis0 = (v.x0 - iLine[0].x1)/dX * dDis + iLine[2];
-                  dis1= (v.x1 - iLine[0].x0)/dX * dDis + iLine[1];
-                } else {
-                  dis0 = (v.y0 - iLine[0].y1)/dY * dDis + iLine[2];
-                  dis1 = (v.y1 - iLine[0].y0)/dY * dDis + iLine[1];
-                }
-                if (isNaN(dis0) || isNaN(dis1)) {
-                  console.log(iLine, jTri);
-                  throw new Error();
-                }
-                iNextLines.push([v, dis0, dis1]);
-              }
-            });
-          }
-          iLines = iNextLines;
-        }
         if (!overlapped) { 
-          //drawTri(...sortedTris[i]);
-          if (iVerts[0]) { vertsToDraw.push([iTri.p0, sortedTris[i][1].x]); }
-          if (iVerts[1]) { vertsToDraw.push([iTri.p1, sortedTris[i][1].y]); }
-          if (iVerts[2]) { vertsToDraw.push([iTri.p2, sortedTris[i][1].z]); }
-          for (const iLine of iLines) {
-            linesToDraw.push(iLine);
-          }
+          trisToDraw.push(sortedTris[i]);
+          const tri01Hash: string = new M2(iTri.p0, iTri.p1).hash();
+          if (!(tri01Hash in edgeTris)) { edgeTris[tri01Hash] = 0; }
+          edgeTris[tri01Hash]++;
+          const tri02Hash: string = new M2(iTri.p0, iTri.p2).hash();
+          if (!(tri02Hash in edgeTris)) { edgeTris[tri02Hash] = 0; }
+          edgeTris[tri02Hash]++;
+          const tri12Hash: string = new M2(iTri.p1, iTri.p2).hash();
+          if (!(tri12Hash in edgeTris)) { edgeTris[tri12Hash] = 0; }
+          edgeTris[tri12Hash]++;
+          if (drawVertices[0]) { verticesToDraw.push([iTri.p0, sortedTris[i][1].x]); }
+          if (drawVertices[1]) { verticesToDraw.push([iTri.p1, sortedTris[i][1].y]); }
+          if (drawVertices[2]) { verticesToDraw.push([iTri.p2, sortedTris[i][1].z]); }
         }
       }
-      for (const vertToDraw of vertsToDraw) {
-        //drawVertex(...vertToDraw);
+      for (const triToDraw of trisToDraw) {
+        drawTri(...triToDraw);
       }
-      for (const lineToDraw of linesToDraw) {
-        //drawLine(...lineToDraw);
+      for (const vertToDraw of verticesToDraw) {
+        drawVertex(...vertToDraw);
       }
     }; setCanvas();
-    
-    // if (sortedPoints.length !== Object.values(refs.terrainPoints).length) { // ensures all terrainPoints are being sorted
-    //   throw new Error();
-    // }
-    // for (let i = sortedPoints.length-1; i >= 0; --i) { // paints terrain by sorted terrainPoints
-    //   const [point, dis]: [V3, number] = sortedPoints[i];
-    //   const screenPos: V2 = refs.camera.pointToScreenPos(point, refs.cameraFOV, screenSize);
-    //   if (isNaN(screenPos.x) || isNaN(screenPos.y)) {
-    //     refs.terrainDespawnWatch.add(point.x + " " + point.y);
-    //     continue;
-    //   }
-    //   const xyPos: V2 = new V2(point.x, point.y);
-    //   if (screenPos.x > window.innerWidth/2
-    //   && (xyPos.x + tileWidth) + " " + (xyPos.y + tileHeight) in refs.terrainPoints 
-    //   && (xyPos.x + tileWidth) + " " + xyPos.y in refs.terrainPoints) {
-    //     drawTri(refs.terrainPoints[(xyPos.x + tileWidth) + " " + (xyPos.y + tileHeight)],
-    //       refs.terrainPoints[(xyPos.x + tileWidth) + " " + xyPos.y], screenPos.x <= window.innerWidth/2);
-    //   }
-    //   if (xyPos.x + tileWidth + " " + (xyPos.y + tileHeight) in refs.terrainPoints
-    //   && (xyPos.x + tileWidth) + " " + (xyPos.y + tileHeight) in refs.terrainPoints) {
-    //     drawTri(refs.terrainPoints[xyPos.x + " " + (xyPos.y + tileHeight)],
-    //       refs.terrainPoints[(xyPos.x + tileWidth) + " " + (xyPos.y + tileHeight)], screenPos.x > window.innerWidth/2);
-    //   }
-    //   if (screenPos.x <= window.innerWidth/2
-    //   && (xyPos.x + tileWidth) + " " + (xyPos.y + tileHeight) in refs.terrainPoints 
-    //   && (xyPos.x + tileWidth) + " " + xyPos.y in refs.terrainPoints) {
-    //     drawTri(refs.terrainPoints[(xyPos.x + tileWidth) + " " + (xyPos.y + tileHeight)],
-    //       refs.terrainPoints[(xyPos.x + tileWidth) + " " + xyPos.y], screenPos.x <= window.innerWidth/2);
-    //   }
-    // }
     
     const debug0: HTMLParagraphElement | null = document.querySelector("#debug0");
     if (debug0 && debugging) {
@@ -484,6 +572,7 @@ export const Terrain: React.FC = () => {
   }
 
   const vertexColor = (baseColor: V3, opacity: number, screenPos: V2): V3 => {
+    const screenSize: V2 = new V2(window.innerWidth, window.innerHeight - .1*window.innerWidth);
     opacity = Math.max(0, Math.min(1, opacity));
     const bgStartColor: V3 = new V3(97,97,112);
     const bgEndColor: V3 = new V3(15,15,30);
