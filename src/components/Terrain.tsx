@@ -10,7 +10,7 @@ import { AppState } from "../App";
 const terrainWidth: number = 170;
 const tileWidth: number = 8;
 const tileHeight: number = 10;
-const maxCamSpeed: number = 20;
+const maxCamSpeed: number = 0;
 const camDirection: V3 = new V3(0, 1, -.05);
 const renderDis: number = 220;
 const perlinWeights: number[] = [.42, .08];
@@ -28,7 +28,7 @@ const triColorDark: V3 = new V3(0, 0, 0);
 const triColorLight: V3 = new V3(20, 20, 80);
 const triMaxOpacity: number = .7;
 const introAnimTime: [number, number] = [0, 3];
-const debugging: boolean = false;
+const debugging: boolean = true;
 
 export interface Props {
   appState: AppState;
@@ -225,6 +225,20 @@ export const Terrain: React.FC<Props> = ({ appState }) => {
     let lineCount: number = 0;
     let triCount: number = 0;
     const setCanvas = (): void => {
+      const canv: HTMLCanvasElement = refs.canvas.current;
+      const styledWidth: number = +getComputedStyle(canv).getPropertyValue("width").slice(0,-2);
+      const styledHeight: number = +getComputedStyle(canv).getPropertyValue("height").slice(0,-2);
+      const dpr: number = window.devicePixelRatio;
+      canv.setAttribute("width", styledWidth*dpr + "px");
+      canv.setAttribute("height", styledHeight*dpr + "px");
+      const gl: WebGLRenderingContext | null = refs.canvas.current.getContext("webgl");
+      if (!gl) { throw new Error("Unable to render with WebGL, your browser or machine may not support it :("); }
+      
+      gl.clearColor(0,0,0,0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+
+    const legacySetCanvas = (): void => {
       const canv: HTMLCanvasElement = refs.canvas.current;
       const ctx: CanvasRenderingContext2D | null = refs.canvas.current.getContext("2d");
       const anchorLength: number = Math.max(window.innerWidth, window.innerHeight);
