@@ -33,7 +33,7 @@ export const Contact: React.FC<Props> = ({ appState, appStateDispatch }) => {
     const nextStr: string = textToRender.charAt(nextIdx);
     setTimeout(() => {
       appStateDispatch({type: AppStateActionType.SetContactText, data: appState.contactText + nextStr});
-    }, appState.contactText.charAt(appState.contactText.length - 1) === "." ? 500 : 16);
+    }, appState.contactText.charAt(appState.contactText.length - 1) === "." ? 200 : 8);
   },[appStateDispatch, appState.contactText]);
 
   return(

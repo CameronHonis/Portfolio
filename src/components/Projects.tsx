@@ -12,8 +12,8 @@ import { SelectCircle } from "../svgComps/SelectCircle";
 import { ProjectAnnotations } from "./ProjectAnnotations";
 import { Arrow } from "./ProjectArrow";
 
-const introTerrainAnimDuration: number = 4;
-const tweenCoeff: number = .02;
+const introTerrainAnimDuration: number = 3.5;
+const tweenCoeff: number = .1;
 const tweenAngleOffset: number = 0.01;
 const tweenRadiusOffset: number = 0.02;
 const tweenLengthOffset: number = .02;
