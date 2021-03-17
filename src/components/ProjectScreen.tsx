@@ -1,7 +1,7 @@
 import React from "react";
 import project0png from "../img/project0e.png";
 import project1png from "../img/project1b.png";
-import project2png from "../img/project2.png";
+import project2png from "../img/project2b.png";
 import { Refs as ProjectRefs } from "./Projects";
 
 export interface Props {
@@ -31,6 +31,16 @@ export const ProjectScreen: React.FC<Props> = ({ projectIdx, projectRefs }) => {
       ring.radiusTargets[0][1] = 1;
       ring.radiusTargets[1][1] = 0;
       ring.opacity = .25;
+    }
+  }
+
+  const mouseClick = (e: React.MouseEvent): void => {
+    if (projectIdx === 0) {
+      window.open("https://festive-easley-41b612.netlify.app/");
+    } else if (projectIdx === 1) {
+      window.open("https://priceless-noyce-a671fe.netlify.app/");
+    } else if (projectIdx === 2) {
+      
     }
   }
 
@@ -70,6 +80,7 @@ export const ProjectScreen: React.FC<Props> = ({ projectIdx, projectRefs }) => {
         id="projectScreenPath"
         onMouseOver={e => screenMouseOver(e)}
         onMouseLeave={e => screenMouseLeave(e)}
+        onClick={e => mouseClick(e)}
       />
     </svg>
   );
