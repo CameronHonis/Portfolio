@@ -46,6 +46,8 @@ export const Contact: React.FC<Props> = ({ appState, appStateDispatch }) => {
       <Github />
       <Linkedin />
       <p id="about">{appState.contactText}</p>
+      <p id="email">cameron‑04@hotmail.com</p>
+      <p id="phone">440‑315‑3817</p>
     </div>
   );
 }

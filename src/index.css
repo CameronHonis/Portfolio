@@ -376,3 +376,20 @@ table {
 #linkedinIcon {
   left: 31vw;
 }
+
+#email {
+  position: absolute;
+  transform: translate(-100%, -50%);
+  font-size: 1.7vw;
+  left: 95vw;
+  top: 5vw;
+  
+}
+
+#phone {
+  position: absolute;
+  transform: translate(-100%, -50%);
+  font-size: 1.7vw;
+  left: 95vw;
+  top: 7.25vw;
+}
