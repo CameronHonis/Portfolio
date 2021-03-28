@@ -1,4 +1,4 @@
-import { V2 } from "./V2";
+import { V2 } from "../models/V2";
 
 export class Helpers {
   static sciNot(num: number, sigFigs: number = 4): string {

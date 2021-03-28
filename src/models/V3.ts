@@ -1,4 +1,4 @@
-import { Helpers } from "./Helpers";
+import { Helpers } from "../services/Helpers";
 
 export class V3 {
   public x: number;
@@ -48,6 +48,14 @@ export class V3 {
 
   equals(that: V3): boolean {
     return this.x === that.x && this.y === that.y && this.z === that.z;
+  }
+
+  toWebGLCoords(): V3 {
+    return new V3(this.x, this.z, -this.y);
+  }
+
+  toArray(): [number, number, number] {
+    return [this.x, this.y, this.z];
   }
 
   toString(sigFigs: number = 4, sciNot: boolean = false): string {

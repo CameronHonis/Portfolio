@@ -1,6 +1,6 @@
 import React from "react";
 import { AppState } from "../App";
-import { Helpers } from "../models/Helpers";
+import { Helpers } from "../services/Helpers";
 import { V2 } from "../models/V2";
 import { projectsArr, State as ProjectsState } from "./Projects";
 

@@ -1,4 +1,4 @@
-import { Helpers } from "./Helpers";
+import { Helpers } from "../services/Helpers";
 
 export class V2 {
   public x: number = 0;
