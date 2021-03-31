@@ -2,7 +2,7 @@ import { Mesh, MeshParameters } from "./Mesh";
 import { Triangle } from "./Triangle";
 import { Vertex } from "./Vertex";
 import icosphereData from "../meshData/icosphere.json";
-import { vec3 } from "gl-matrix";
+import { vec3, vec4 } from "gl-matrix";
 
 export class Icosphere extends Mesh {
 
@@ -10,11 +10,11 @@ export class Icosphere extends Mesh {
     shaderProgram, 
     matrix, 
     shadeSmooth=true,
-    color=[.7, .7, .7, 1], 
     axesScale=[1, 1, 1],
     ambientLight=.25,
+    name
   }: MeshParameters) {
-    super({ matrix, shaderProgram, shadeSmooth, ambientLight, axesScale, color });
+    super({ matrix, shaderProgram, shadeSmooth, ambientLight, axesScale, name });
     for (const [ p0idx, p1idx, p2idx ] of icosphereData.faces) {
       const [ x0, y0, z0 ]: number[] = icosphereData.vertices[p0idx];
       const [ x1, y1, z1 ]: number[] = icosphereData.vertices[p1idx];
@@ -32,9 +32,9 @@ export class Icosphere extends Mesh {
       vec3.cross(p2Normal, p1, p0);
       vec3.normalize(p2Normal, p2Normal);
       this.triangles.push(new Triangle(
-        new Vertex({position: p0, normal: p0Normal}),
-        new Vertex({position: p1, normal: p1Normal}),
-        new Vertex({position: p2, normal: p2Normal})
+        new Vertex({position: p0, normal: p0Normal, color: vec4.fromValues(1, 1, 1, 0)}),
+        new Vertex({position: p1, normal: p1Normal, color: vec4.fromValues(1, 1, 1, 0)}),
+        new Vertex({position: p2, normal: p2Normal, color: vec4.fromValues(1, 1, 1, 0)})
       ));
     }
   }

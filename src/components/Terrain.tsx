@@ -19,17 +19,17 @@ import vs0 from "!raw-loader!../shaders/vertexShader0.glsl";
 // @ts-ignore
 import fs0 from "!raw-loader!../shaders/fragmentShader0.glsl";
 
-const terrainWidth: number = 170;
-const tileWidth: number = 8;
-const tileHeight: number = 10;
-const maxCamSpeed: number = 1;
+const terrainWidth: number = 48; //48
+const tileWidth: number = 4;
+const tileHeight: number = 4;
+const maxCamSpeed: number = 30;
 const camDirection: V3 = new V3(0, 1, -.05);
-const renderDis: number = 220;
-const perlinWeights: number[] = [.42, .08];
-const perlinFreqs: number[] = [.05, .7];
-const perlinMax: number = 40;
-const canyonDropoff: number = .12;
-const canyonMax: number = 15;
+const renderDis: number = 120; //120
+const perlinWeights: number[] = [0.4, .1];
+const perlinFreqs: number[] = [.08, .95];
+const perlinMax: number = 25;
+const canyonDropoff: number = .2;
+const canyonMax: number = 12;
 const defaultTerrainHeight: number = 0;
 const fogStart: number = 0;
 const fogEnd: number = .98*renderDis;
@@ -52,8 +52,8 @@ export interface Refs {
   terrainPoints: {
     [index: string]: { // index format: xPos + " " + zPos
       vertexPosition: vec3;
-      backwardDiagTriangle?: Mesh;
-      leftDiagTriangle?: Mesh;
+      backwardDiagTriangle?: Triangle;
+      leftDiagTriangle?: Triangle;
       vertexCap: Icosphere;
       backwardEdgeCap?: EdgeCap;
       diagEdgeCap?: EdgeCap;
@@ -61,13 +61,15 @@ export interface Refs {
     };
   };
   terrainZBounds: vec2;
-  opaqueMeshes: Mesh[];
+  lastSpawn: vec2;
+  lastDespawn: vec2;
+  terrainMesh?: Mesh;
   transparentMeshes: Mesh[];
   cameraMatrix: mat4;
   cameraSpeed: number;
   t: number;
   paused: boolean;
-  perlinSeed: number[]
+  perlinSeed: number[];
   fpsRA: number;
   framesCount: number;
   highlights: Set<{
@@ -85,9 +87,10 @@ export const initRefs: Refs = {
   canvas: React.createRef() as React.MutableRefObject<HTMLCanvasElement>,
   terrainPoints: {},
   terrainZBounds: vec2.fromValues(0, 0),
-  opaqueMeshes: [],
+  lastSpawn: vec2.fromValues(-tileWidth*Math.ceil(terrainWidth/tileWidth), 0),
+  lastDespawn: vec2.fromValues(-tileWidth*Math.ceil(terrainWidth/tileWidth), 0),
   transparentMeshes: [],
-  cameraMatrix: WebGLServices.mat4(),
+  cameraMatrix: WebGLServices.mat4(), //mat4.fromValues(1,0,0,0,0,0,-1,0,0,1,0,0,0,3,0,1),
   cameraSpeed: 0,
   t: 0,
   paused: false,
@@ -148,17 +151,19 @@ export const Terrain: React.FC<Props> = ({ appState }) => {
       let gl: WebGLRenderingContext = refs.canvas.current.getContext("webgl") as WebGLRenderingContext;
       if (!gl) { throw new Error("Unable to render with WebGL, your browser or machine may not support it :("); }
       // link webgl debugger
-      gl = WebGLDebugUtil.makeDebugContext(gl, undefined, (a: string, b: any[]) => {
-        for (let i = 0; i < b.length; ++i) {
-          if (b[i] === undefined) {
-            console.error("undefined passed to gl." + a + "(" + WebGLDebugUtil.glFunctionArgsToString(a, b) + ")")
-          }
-        }
-      });
+      // gl = WebGLDebugUtil.makeDebugContext(gl, undefined, (a: string, b: any[]) => {
+      //   for (let i = 0; i < b.length; ++i) {
+      //     if (b[i] === undefined) {
+      //       console.error("undefined passed to gl." + a + "(" + WebGLDebugUtil.glFunctionArgsToString(a, b) + ")")
+      //     }
+      //   }
+      // });
       // initialize shader programs
       const vs0Data: ShaderData = {type: gl.VERTEX_SHADER, source: vs0};
       const fs0Data: ShaderData = {type: gl.FRAGMENT_SHADER, source: fs0};
       const program0: WebGLProgram = WebGLServices.createProgramWithShaders(gl, [vs0Data, fs0Data]);
+      // create terrain mesh
+      refs.terrainMesh = new Mesh({shaderProgram: program0});
       window.requestAnimationFrame(t0 => terrainClock(t0, t0, gl, program0));
     }
   },[]); //eslint-disable-line
@@ -168,150 +173,163 @@ export const Terrain: React.FC<Props> = ({ appState }) => {
   },[appState.viewportSnappedSize]); //eslint-disable-line
 
   const getTerrainHeight = (x: number, z: number): number => {
-    const perlinHeight: number = perlinMax*(perlinWeights[0]*Helpers.perlinR2(perlinFreqs[0]*x, perlinFreqs[0]*z/1.5, refs.perlinSeed) 
-    + perlinWeights[1]*Helpers.perlinR2(perlinFreqs[1]*x, perlinFreqs[1]*z/1.5, refs.perlinSeed) - .5);
+    const perlinHeight: number = perlinMax*(perlinWeights[0]*Helpers.perlinR2(perlinFreqs[0]*x, perlinFreqs[0]*z, refs.perlinSeed) 
+    + perlinWeights[1]*Helpers.perlinR2(perlinFreqs[1]*x, perlinFreqs[1]*z, refs.perlinSeed) - .5);
     const canyonHeight: number = canyonMax*(1 - 1/(1+Math.pow(Math.E, Math.abs(canyonDropoff*x) - 4)));
     return perlinHeight + canyonHeight + defaultTerrainHeight;
   }
 
   const updateScene = (dt: number, gl: WebGLRenderingContext, pr: WebGLProgram) => {
-    const screenSize: V2 = new V2(window.innerWidth, window.innerHeight - .1*window.innerWidth);
-    // console.log(refs.camera.position.toString(), viewBB[0].toString(), viewBB[1].toString());
     const spawnDespawn = (): void => {
+      if (!refs.terrainMesh) return;
       const xTileRange: [number, number] = [
         tileWidth*Math.floor(-terrainWidth/tileWidth),
         tileWidth*Math.ceil(terrainWidth/tileWidth),
       ];
-      while (refs.terrainZBounds[0] < refs.cameraMatrix[14]) {
-        // despawn row behind camera
+      const despawnPoint = (x: number, z: number): void => {
         const transparentDeleteIdxs: Set<number> = new Set();
-        const opaqueDeleteIdxs: Set<number> = new Set();
-        for (let x = xTileRange[0]; x <= xTileRange[1]; x += tileWidth) {
-          const hash: string = x + " " + refs.terrainZBounds[0];
-          if (hash in refs.terrainPoints) {
-            transparentDeleteIdxs.add(refs.terrainPoints[hash].vertexCap.worldArrayIdx);
-            if (refs.terrainPoints[hash].backwardEdgeCap) {
-              transparentDeleteIdxs.add(refs.terrainPoints[hash].backwardEdgeCap!.worldArrayIdx);
-            }
-            if (refs.terrainPoints[hash].diagEdgeCap) {
-              transparentDeleteIdxs.add(refs.terrainPoints[hash].diagEdgeCap!.worldArrayIdx);
-            }
-            if (refs.terrainPoints[hash].leftEdgeCap) {
-              transparentDeleteIdxs.add(refs.terrainPoints[hash].leftEdgeCap!.worldArrayIdx);
-            }
-            if (refs.terrainPoints[hash].backwardDiagTriangle) {
-              opaqueDeleteIdxs.add(refs.terrainPoints[hash].backwardDiagTriangle!.worldArrayIdx);
-            }
-            if (refs.terrainPoints[hash].leftDiagTriangle) {
-              opaqueDeleteIdxs.add(refs.terrainPoints[hash].leftDiagTriangle!.worldArrayIdx);
-            }
-          }
+        const hash: string = x + " " + z;
+        if (!(hash in refs.terrainPoints)) return;
+        transparentDeleteIdxs.add(refs.terrainPoints[hash].vertexCap.worldArrayIdx!);
+        if (refs.terrainPoints[hash].backwardEdgeCap) {
+          transparentDeleteIdxs.add(refs.terrainPoints[hash].backwardEdgeCap!.worldArrayIdx!);
         }
-        // delete idxs from mesh arrays
-        let pointer0: number = 0;
-        for (let i = 0; i < refs.opaqueMeshes.length; ++i) {
-          if (!opaqueDeleteIdxs.has(i)) {
-            refs.opaqueMeshes[pointer0] = refs.opaqueMeshes[i];
-            pointer0++;
-          }
+        if (refs.terrainPoints[hash].diagEdgeCap) {
+          transparentDeleteIdxs.add(refs.terrainPoints[hash].diagEdgeCap!.worldArrayIdx!);
         }
-        for (let i = 0; i < opaqueDeleteIdxs.size; ++i) {
-          refs.opaqueMeshes.pop();
+        if (refs.terrainPoints[hash].leftEdgeCap) {
+          transparentDeleteIdxs.add(refs.terrainPoints[hash].leftEdgeCap!.worldArrayIdx!);
         }
-        pointer0 = 0;
-        for (let i = 0; i < refs.opaqueMeshes.length; ++i) {
-          if (!transparentDeleteIdxs.has(i)) {
-            transparentDeleteIdxs[pointer0] = transparentDeleteIdxs[i];
-            pointer0++;
-          }
+        if (refs.terrainPoints[hash].backwardDiagTriangle) {
+          refs.terrainMesh!.removeTriangle(refs.terrainPoints[hash].backwardDiagTriangle!.meshArrayIdx!);
         }
+        if (refs.terrainPoints[hash].leftDiagTriangle) {
+          refs.terrainMesh!.removeTriangle(refs.terrainPoints[hash].leftDiagTriangle!.meshArrayIdx!);
+        }
+        delete refs.terrainPoints[hash];
+        let shift: number = 0;
         for (let i = 0; i < refs.transparentMeshes.length; ++i) {
+          if (transparentDeleteIdxs.has(i)) {
+            shift++;
+          } else {
+            refs.transparentMeshes[i - shift] = refs.transparentMeshes[i];
+            refs.transparentMeshes[i - shift].worldArrayIdx = i - shift;
+          }
+        }
+        for (let i = 0; i < shift; ++i) {
           refs.transparentMeshes.pop();
         }
       }
-      while (refs.terrainZBounds[1] < refs.cameraMatrix[14] + renderDis) {
-        // spawn next row
-        const nextZ: number = refs.terrainZBounds[1] + tileHeight;
-        let leftHash: string = (xTileRange[0] - tileWidth) + " " + nextZ;
-        for (let x = xTileRange[0]; x <= xTileRange[1]; x += tileWidth) {
-          const currPosition: vec3 = vec3.fromValues(x, getTerrainHeight(x, nextZ), nextZ);
-          const diagHash: string = (x - tileWidth) + " " + (nextZ - tileHeight);
-          const backwardHash: string = x + " " + (nextZ - tileHeight);
-          let backwardDiagTriangle: Mesh | undefined = undefined, leftDiagTriangle: Mesh | undefined = undefined;
-          let leftEdgeCap: EdgeCap | undefined = undefined, diagEdgeCap: EdgeCap | undefined = undefined;
-          let backwardEdgeCap: EdgeCap | undefined = undefined;
-          if (leftHash in refs.terrainPoints && diagHash in refs.terrainPoints) {
-            const leftPosition: vec3 = refs.terrainPoints[leftHash].vertexPosition;
-            const diagPosition: vec3 = refs.terrainPoints[diagHash].vertexPosition;
-            const leftNormal: vec3 = WebGLServices.calcNormal(leftPosition, currPosition, diagPosition);
-            const currNormal: vec3 = WebGLServices.calcNormal(currPosition, diagPosition, leftPosition);
-            const diagNormal: vec3 = WebGLServices.calcNormal(diagPosition, leftPosition, currPosition);
-            leftDiagTriangle = new Mesh({ shaderProgram: pr, color: vec4.fromValues(.0784, .0784, .3137, 1)});
-            leftDiagTriangle.triangles.push(new Triangle(
-              new Vertex({position: leftPosition, normal: leftNormal}),
-              new Vertex({position: currPosition, normal: currNormal}),
-              new Vertex({position: diagPosition, normal: diagNormal}),
-            ));
-            leftDiagTriangle.worldArrayIdx = refs.opaqueMeshes.length;
-            refs.opaqueMeshes.push(leftDiagTriangle);
-          }
-          if (backwardHash in refs.terrainPoints && diagHash in refs.terrainPoints) {
-            const backPosition: vec3 = refs.terrainPoints[backwardHash].vertexPosition;
-            const diagPosition: vec3 = refs.terrainPoints[diagHash].vertexPosition;
-            const backNormal: vec3 = WebGLServices.calcNormal(backPosition, diagPosition, currPosition);
-            const diagNormal: vec3 = WebGLServices.calcNormal(diagPosition, currPosition, backPosition);
-            const currNormal: vec3 = WebGLServices.calcNormal(currPosition, backPosition, diagPosition);
-            backwardDiagTriangle = new Mesh({ shaderProgram: pr, color: vec4.fromValues(.0784, .0784, .3137, 1)});
-            backwardDiagTriangle.triangles.push(new Triangle(
-              new Vertex({position: backPosition, normal: backNormal}),
-              new Vertex({position: diagPosition, normal: diagNormal}),
-              new Vertex({position: currPosition, normal: currNormal}),
-            ));
-            backwardDiagTriangle.worldArrayIdx = refs.opaqueMeshes.length;
-            refs.opaqueMeshes.push(backwardDiagTriangle);
-          }
-          if (backwardHash in refs.terrainPoints) {
-            const backPosition: vec3 = refs.terrainPoints[backwardHash].vertexPosition;
-            backwardEdgeCap = new EdgeCap({ shaderProgram: pr, color: vec4.fromValues(0,0,0,0), ambientLight: 1});
-            backwardEdgeCap.worldArrayIdx = refs.transparentMeshes.length;
-            refs.transparentMeshes.push(backwardEdgeCap);
-            WebGLServices.attachEdgecap(backwardEdgeCap, backPosition, currPosition);
-          }
-          if (diagHash in refs.terrainPoints) {
-            const diagPosition: vec3 = refs.terrainPoints[diagHash].vertexPosition;
-            diagEdgeCap = new EdgeCap({ shaderProgram: pr, color: vec4.fromValues(0,0,0,0), ambientLight: 1});
-            diagEdgeCap.worldArrayIdx = refs.transparentMeshes.length;
-            refs.transparentMeshes.push(diagEdgeCap);
-            WebGLServices.attachEdgecap(diagEdgeCap, diagPosition, currPosition);
-          }
-          if (leftHash in refs.terrainPoints) {
-            const leftPosition: vec3 = refs.terrainPoints[leftHash].vertexPosition;
-            leftEdgeCap = new EdgeCap({ shaderProgram: pr, color: vec4.fromValues(0,0,0,0), ambientLight: 1});
-            leftEdgeCap.worldArrayIdx = refs.transparentMeshes.length;
-            refs.transparentMeshes.push(leftEdgeCap);
-            WebGLServices.attachEdgecap(leftEdgeCap, leftPosition, currPosition);
-          }
-          const vertexCap: Icosphere = new Icosphere({shaderProgram: pr, matrix: WebGLServices.mat4(currPosition), ambientLight: 1});
-          vertexCap.worldArrayIdx = refs.transparentMeshes.length;
-          refs.transparentMeshes.push(vertexCap);
-
-          refs.terrainPoints[x + " " + nextZ] = {
-            vertexPosition: currPosition,
-            vertexCap,
-            leftDiagTriangle,
-            backwardDiagTriangle,
-            leftEdgeCap,
-            diagEdgeCap,
-            backwardEdgeCap,
-          };
-          // set leftHash for next iteration
-          leftHash = x + " " + nextZ;
+      let nextDespawn: vec2 = vec2.fromValues(refs.lastDespawn[0] + tileWidth, refs.lastDespawn[1]);
+      if (nextDespawn[0] > xTileRange[1]) {
+        nextDespawn = vec2.fromValues(xTileRange[0], nextDespawn[1] - tileHeight);
+      }
+      while (nextDespawn[1] > tileHeight*nextDespawn[0]/(xTileRange[1] - xTileRange[0]) + refs.cameraMatrix[14] + 3*tileHeight/2) {
+        despawnPoint(nextDespawn[0], nextDespawn[1]);
+        refs.lastDespawn = vec2.fromValues(nextDespawn[0], nextDespawn[1]);
+        nextDespawn = vec2.fromValues(nextDespawn[0] + tileWidth, nextDespawn[1]);
+        if (nextDespawn[0] > xTileRange[1]) {
+          nextDespawn = vec2.fromValues(xTileRange[0], nextDespawn[1] - tileHeight);
         }
-        // update terrain bounds
-        refs.terrainZBounds[1] = nextZ;
+      }
+      const spawnPoint = (x: number, z: number): void => {
+        const currPosition: vec3 = vec3.fromValues(x, getTerrainHeight(x, z), z);
+        const leftHash: string = (x - tileWidth) + " " + z;
+        const diagHash: string = (x - tileWidth) + " " + (z + tileHeight);
+        const backwardHash: string = x + " " + (z + tileHeight);
+        let backwardDiagTriangle: Triangle | undefined = undefined, leftDiagTriangle: Triangle | undefined = undefined;
+        let leftEdgeCap: EdgeCap | undefined = undefined, diagEdgeCap: EdgeCap | undefined = undefined;
+        let backwardEdgeCap: EdgeCap | undefined = undefined;
+        if (leftHash in refs.terrainPoints && diagHash in refs.terrainPoints) {
+          const leftPosition: vec3 = refs.terrainPoints[leftHash].vertexPosition;
+          const diagPosition: vec3 = refs.terrainPoints[diagHash].vertexPosition;
+          const leftNormal: vec3 = WebGLServices.calcNormal(leftPosition, currPosition, diagPosition);
+          const currNormal: vec3 = WebGLServices.calcNormal(currPosition, diagPosition, leftPosition);
+          const diagNormal: vec3 = WebGLServices.calcNormal(diagPosition, leftPosition, currPosition);
+          leftDiagTriangle = new Triangle(
+            new Vertex({position: leftPosition, normal: leftNormal, color: vec4.fromValues(.0784, .0784, .3137, 1)}),
+            new Vertex({position: diagPosition, normal: diagNormal, color: vec4.fromValues(.0784, .0784, .3137, 1)}),
+            new Vertex({position: currPosition, normal: currNormal, color: vec4.fromValues(.0784, .0784, .3137, 1)}),
+            refs.terrainMesh!.triangles.length,
+          );
+          refs.terrainMesh!.triangles.push(leftDiagTriangle);
+        }
+        if (backwardHash in refs.terrainPoints && diagHash in refs.terrainPoints) {
+          const backPosition: vec3 = refs.terrainPoints[backwardHash].vertexPosition;
+          const diagPosition: vec3 = refs.terrainPoints[diagHash].vertexPosition;
+          const backNormal: vec3 = WebGLServices.calcNormal(backPosition, diagPosition, currPosition);
+          const diagNormal: vec3 = WebGLServices.calcNormal(diagPosition, currPosition, backPosition);
+          const currNormal: vec3 = WebGLServices.calcNormal(currPosition, backPosition, diagPosition);
+          backwardDiagTriangle = new Triangle(
+            new Vertex({position: backPosition, normal: backNormal, color: vec4.fromValues(.0784, .0784, .3137, 1)}),
+            new Vertex({position: currPosition, normal: currNormal, color: vec4.fromValues(.0784, .0784, .3137, 1)}),
+            new Vertex({position: diagPosition, normal: diagNormal, color: vec4.fromValues(.0784, .0784, .3137, 1)}),
+            refs.terrainMesh!.triangles.length
+          );
+          refs.terrainMesh!.triangles.push(backwardDiagTriangle);
+        }
+        if (backwardHash in refs.terrainPoints) {
+          const backPosition: vec3 = refs.terrainPoints[backwardHash].vertexPosition;
+          backwardEdgeCap = new EdgeCap({ shaderProgram: pr, ambientLight: 1, name: "backward" + backwardHash});
+          backwardEdgeCap.worldArrayIdx = refs.transparentMeshes.length;
+          refs.transparentMeshes.push(backwardEdgeCap);
+          WebGLServices.attachEdgecap(backwardEdgeCap, backPosition, currPosition, .5);
+          backwardEdgeCap.updateVertices();
+        }
+        if (diagHash in refs.terrainPoints) {
+          const diagPosition: vec3 = refs.terrainPoints[diagHash].vertexPosition;
+          diagEdgeCap = new EdgeCap({ shaderProgram: pr, ambientLight: 1, name: "diag" + diagHash});
+          diagEdgeCap.worldArrayIdx = refs.transparentMeshes.length;
+          refs.transparentMeshes.push(diagEdgeCap);
+          WebGLServices.attachEdgecap(diagEdgeCap, diagPosition, currPosition, .5);
+          diagEdgeCap.updateVertices();
+        }
+        if (leftHash in refs.terrainPoints) {
+          const leftPosition: vec3 = refs.terrainPoints[leftHash].vertexPosition;
+          leftEdgeCap = new EdgeCap({ shaderProgram: pr, ambientLight: 1, name: "left" + leftHash});
+          leftEdgeCap.worldArrayIdx = refs.transparentMeshes.length;
+          refs.transparentMeshes.push(leftEdgeCap);
+          WebGLServices.attachEdgecap(leftEdgeCap, leftPosition, currPosition, .5);
+          leftEdgeCap.updateVertices();
+        }
+        const vertexCap: Icosphere = new Icosphere({shaderProgram: pr, matrix: WebGLServices.mat4(currPosition), ambientLight: 1, name: "vertex" + x + " " + z});
+        vertexCap.updateVertices();
+        vertexCap.worldArrayIdx = refs.transparentMeshes.length;
+        refs.transparentMeshes.push(vertexCap);
+
+        refs.terrainPoints[x + " " + z] = {
+          vertexPosition: currPosition,
+          vertexCap,
+          leftDiagTriangle,
+          backwardDiagTriangle,
+          leftEdgeCap,
+          diagEdgeCap,
+          backwardEdgeCap,
+        };
+        const debug0: HTMLParagraphElement | null = document.querySelector("#debug0");
+        if (debug0) {
+          debug0.textContent = refs.transparentMeshes.length + " meshes";
+        }
+        const debug1: HTMLParagraphElement | null = document.querySelector("#debug1");
+        if (debug1) {
+          debug1.textContent = refs.terrainMesh!.triangles.length + " tris";
+        }
+      }
+      let nextSpawn: vec2 = vec2.fromValues(refs.lastSpawn[0] + tileWidth, refs.lastSpawn[1]);
+      if (nextSpawn[0] > xTileRange[1]) {
+        nextSpawn = vec2.fromValues(xTileRange[0], nextSpawn[1] - tileHeight);
+      }
+      while (nextSpawn[1] > tileHeight*nextSpawn[0]/(xTileRange[1] - xTileRange[0]) + refs.cameraMatrix[14] - renderDis - tileHeight/2) {
+        spawnPoint(nextSpawn[0], nextSpawn[1]);
+        refs.lastSpawn = vec2.fromValues(nextSpawn[0], nextSpawn[1]);
+        nextSpawn = vec2.fromValues(nextSpawn[0] + tileWidth, nextSpawn[1]);
+        if (nextSpawn[0] > xTileRange[1]) {
+          nextSpawn = vec2.fromValues(xTileRange[0], nextSpawn[1] - tileHeight);
+        }
       }
     }; spawnDespawn();
     const incrementPhys = (): void => {
+      if (!refs.terrainMesh) return;
       if (refs.paused) return;
       refs.t += dt;
       if (refs.t < introAnimTime[0] || refs.t > introAnimTime[1]) {
@@ -363,17 +381,18 @@ export const Terrain: React.FC<Props> = ({ appState }) => {
       }
     }; incrementPhys();
     const render = (): void => {
-      const testMesh0: Mesh = new Mesh({ shaderProgram: pr, ambientLight: 1});
-      const testTri0: Triangle = new Triangle(
-        new Vertex({position: vec3.fromValues(0,2,-5), normal: vec3.fromValues(0,0,1)}),
-        new Vertex({position: vec3.fromValues(-2, -1, -5), normal: vec3.fromValues(0,0,1)}),
-        new Vertex({position: vec3.fromValues(2, -1, -5), normal: vec3.fromValues(0,0,1)})
-      );
-      testMesh0.triangles.push(testTri0);
+      if (!refs.terrainMesh) return;
+      // const testMesh0: Mesh = new Mesh({ shaderProgram: pr, ambientLight: 1});
+      // const testTri0: Triangle = new Triangle(
+      //   new Vertex({position: vec3.fromValues(0,2,-5), normal: vec3.fromValues(0,0,1)}),
+      //   new Vertex({position: vec3.fromValues(-2, -1, -5), normal: vec3.fromValues(0,0,1)}),
+      //   new Vertex({position: vec3.fromValues(2, -1, -5), normal: vec3.fromValues(0,0,1)})
+      // );
+      // testMesh0.triangles.push(testTri0);
       const lightPosition: vec3 = vec3.fromValues(refs.cameraMatrix[12], refs.cameraMatrix[13], refs.cameraMatrix[14]);
       vec3.add(lightPosition, lightPosition, vec3.fromValues(20, 100, 0));
-      WebGLServices.renderScene({gl, opaqueMeshes: [testMesh0], transparentMeshes: [], cameraMatrix: refs.cameraMatrix, 
-        lightPosition, fogStart, fogEnd, fogMin, fogMax, fogTransform});
+      WebGLServices.renderScene({gl, terrainMesh: refs.terrainMesh, transparentMeshes: refs.transparentMeshes, cameraMatrix: refs.cameraMatrix, 
+        renderDis, lightPosition, fogStart, fogEnd, fogMin, fogMax, fogTransform});
     }; render();
   }
 
