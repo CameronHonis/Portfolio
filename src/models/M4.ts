@@ -1,4 +1,4 @@
-import { Helpers } from "./Helpers";
+import { Helpers } from "../services/Helpers";
 import { V2 } from "./V2";
 import { V3 } from "./V3";
 
@@ -37,7 +37,7 @@ export class M4 {
 
   constructor()
   constructor(r00: number, r01: number, r02: number, p03: number, r10: number, r11: number, r12: number, 
-  p13: number, r20: number, r21: number, r22: number, p23: number) 
+  p13: number, r20: number, r21: number, r22: number, p23: number)
   constructor(rightVector: V3, lookVector: V3, upVector: V3, position: V3)
   constructor(position: V3, target: V3) // assumes 0 "roll", rightVector from <0,1,0> x lookVector
   constructor(...args: any){

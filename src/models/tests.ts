@@ -1,4 +1,4 @@
-import { Helpers } from "./Helpers";
+import { Helpers } from "../services/Helpers";
 import { M2 } from "./M2";
 import { M4 } from "./M4";
 import { Tri } from "./Tri";

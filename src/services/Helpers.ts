@@ -1,4 +1,4 @@
-import { V2 } from "./V2";
+import { V2 } from "../models/V2";
 
 export class Helpers {
   static sciNot(num: number, sigFigs: number = 4): string {
@@ -139,5 +139,13 @@ export class Helpers {
   // fits index to array, prevents index overflows (i.e. input: idx = -1, arrSize = 3 --> output: 2)
   static fitIndex(idx: number, arrSize: number): number {
     return (idx + (idx < 0 ? -Math.floor(idx/arrSize) : 1)*arrSize) % arrSize;
+  }
+
+  static randomRange(low: number, high: number): number {
+    return low + (high - low)*Math.random();
+  }
+
+  static clamp(num: number, low: number, high: number): number {
+    return Math.max(low, Math.min(high, num));
   }
 }

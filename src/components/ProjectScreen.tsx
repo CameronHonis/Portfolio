@@ -40,7 +40,7 @@ export const ProjectScreen: React.FC<Props> = ({ projectIdx, projectRefs }) => {
     } else if (projectIdx === 1) {
       window.open("https://priceless-noyce-a671fe.netlify.app/");
     } else if (projectIdx === 2) {
-      
+      window.open("https://github.com/CameronHonis/Algodesi");
     }
   }
 

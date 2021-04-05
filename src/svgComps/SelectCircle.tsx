@@ -1,5 +1,5 @@
 import React from "react";
-import { Helpers } from "../models/Helpers";
+import { Helpers } from "../services/Helpers";
 import { State as ProjectsState } from "../components/Projects";
 
 export interface Props {
