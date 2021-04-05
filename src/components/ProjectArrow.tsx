@@ -62,9 +62,9 @@ export const Arrow: React.FC<Props> = ({ isLeft, projectsState, setProjectsState
     });
   }
 
-  const weightHeightRatio: number = appState.viewportSnappedSize.x/appState.viewportSnappedSize.y;
+  const widthHeightRatio: number = appState.viewportSnappedSize.x/appState.viewportSnappedSize.y;
   let arrowTopPos: string;
-  if (weightHeightRatio > 1.5) {
+  if (widthHeightRatio > 1.5) {
     arrowTopPos = "55vh";
   } else {
     arrowTopPos = "calc(100% - 80px)";
@@ -72,7 +72,7 @@ export const Arrow: React.FC<Props> = ({ isLeft, projectsState, setProjectsState
   const nextIdx: number = Helpers.fitIndex(projectsState.projectIndex + (isLeft ? -1 : 1), projectsArr.length);
   let arrowMatrix: string, arrowLeftPos: string, arrowSize: V2, annotationLeftPos: string, annotationTopPos: string;
   if (isLeft) {
-    if (weightHeightRatio > 1.5) {
+    if (widthHeightRatio > 1.5) {
       arrowMatrix = "matrix(-1,0,0,1," + (-.04*appState.viewportSnappedSize.y) + "," + (-.06*appState.viewportSnappedSize.y) + ")";
       arrowLeftPos = "8vh";
       arrowSize = new V2(.08*appState.viewportSnappedSize.y, .12*appState.viewportSnappedSize.y);
@@ -80,13 +80,17 @@ export const Arrow: React.FC<Props> = ({ isLeft, projectsState, setProjectsState
       annotationTopPos = "65vh";
     } else {
       arrowMatrix = "matrix(-1,0,0,1," + (-.025*appState.viewportSnappedSize.y) + "," + (-.0375*appState.viewportSnappedSize.y) + ")";
-      arrowLeftPos = "30vw";
+      arrowLeftPos = "calc(50vw - 140px)";
       arrowSize = new V2(.05*appState.viewportSnappedSize.y, .075*appState.viewportSnappedSize.y);
       annotationLeftPos = "20vw";
-      annotationTopPos = "calc(100% - 80px)";
+      if (widthHeightRatio > .66) {
+        annotationTopPos = "calc(100% - 80px)";
+      } else {
+        annotationTopPos = "calc(100% - 140px)";
+      }
     }
   } else {
-    if (weightHeightRatio > 1.5) {
+    if (widthHeightRatio > 1.5) {
       arrowMatrix = "matrix(1,0,0,1," + (-.04*appState.viewportSnappedSize.y) + "," + (-.06*appState.viewportSnappedSize.y) + ")";
       arrowLeftPos = "calc(100vw - 8vh)";
       arrowSize = new V2(.08*appState.viewportSnappedSize.y, .12*appState.viewportSnappedSize.y);
@@ -94,10 +98,14 @@ export const Arrow: React.FC<Props> = ({ isLeft, projectsState, setProjectsState
       annotationTopPos = "65vh";
     } else {
       arrowMatrix = "matrix(1,0,0,1," + (-.025*appState.viewportSnappedSize.y) + "," + (-.0375*appState.viewportSnappedSize.y) + ")";
-      arrowLeftPos = "70vw";
+      arrowLeftPos = "calc(50vw + 140px)";
       arrowSize = new V2(.05*appState.viewportSnappedSize.y, .075*appState.viewportSnappedSize.y);
       annotationLeftPos = "80vw";
-      annotationTopPos = "calc(100% - 80px)";
+      if (widthHeightRatio > .66) {
+        annotationTopPos = "calc(100% - 80px)";
+      } else {
+        annotationTopPos = "calc(100% - 140px)";
+      }
     }
   }
 

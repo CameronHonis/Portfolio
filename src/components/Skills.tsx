@@ -1,5 +1,4 @@
 import React from "react";
-import { ApolloGraphql } from "../svgComps/ApolloGraphql";
 import { Blender } from "../svgComps/Blender";
 import { GIMP } from "../svgComps/GIMP";
 import { GitIcon } from "../svgComps/GitIcon";
@@ -20,6 +19,7 @@ import { Springio } from "../svgComps/Springio";
 import { SQL } from "../svgComps/SQL";
 import { Typescript } from "../svgComps/Typescript";
 import { SkillFrame } from "./SkillFrame";
+import { OpenGL } from "../svgComps/OpenGL";
 
 export enum SkillCategory {
   Languages,
@@ -95,6 +95,12 @@ export const initRefs: Refs = {
       iconSVG: <Redux />,
     },
     {
+      name: "OpenGL",
+      cat: SkillCategory.Frameworks,
+      ref: React.createRef() as React.MutableRefObject<HTMLDivElement>,
+      iconSVG: <OpenGL/>,
+    },
+    {
       name: "Spring",
       cat: SkillCategory.Frameworks,
       ref: React.createRef() as React.MutableRefObject<HTMLDivElement>,
@@ -117,12 +123,6 @@ export const initRefs: Refs = {
       cat: SkillCategory.Frameworks,
       ref: React.createRef() as React.MutableRefObject<HTMLDivElement>,
       iconSVG: <MongoDB />,
-    },
-    {
-      name: "Apollo",
-      cat: SkillCategory.Frameworks,
-      ref: React.createRef() as React.MutableRefObject<HTMLDivElement>,
-      iconSVG: <ApolloGraphql />,
     },
     {
       name: "Git/Github",

@@ -140,4 +140,12 @@ export class Helpers {
   static fitIndex(idx: number, arrSize: number): number {
     return (idx + (idx < 0 ? -Math.floor(idx/arrSize) : 1)*arrSize) % arrSize;
   }
+
+  static randomRange(low: number, high: number): number {
+    return low + (high - low)*Math.random();
+  }
+
+  static clamp(num: number, low: number, high: number): number {
+    return Math.max(low, Math.min(high, num));
+  }
 }

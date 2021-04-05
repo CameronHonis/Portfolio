@@ -1,5 +1,9 @@
 import React from "react"
 
+interface Props {
+  style: Object;
+}
+
 export interface State {
   mouseOver: boolean;
   mouseDown: boolean;
@@ -10,7 +14,7 @@ export const initState: State = {
   mouseDown: false,
 }
 
-export const Linkedin: React.FC<{}> = () => {
+export const Linkedin: React.FC<Props> = ({ style }) => {
   const [ state, setState ] = React.useState(initState);
 
   let stopColor0: string, stopColor1: string;
@@ -25,8 +29,8 @@ export const Linkedin: React.FC<{}> = () => {
     stopColor1 = "rgba(255,255,255,.1)"
   }
   return(
-    <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg" className="social" id="linkedinIcon">
-      <title>GitHub icon</title>
+    <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg" className="social" id="linkedinIcon" style={style}>
+      <title>Linkedin Icon</title>
       <linearGradient
         id="grad4"
         x1="0"

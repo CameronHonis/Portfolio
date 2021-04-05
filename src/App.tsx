@@ -91,7 +91,7 @@ export const App: React.FC = () => {
     <>
       <Header appState={appState} appStateDispatch={appStateDispatch} />
       { true && <Terrain appState={appState} />}
-      {/* {bodyComp} */}
+      {bodyComp}
       {false && <TriEditor />}
     </>
   );

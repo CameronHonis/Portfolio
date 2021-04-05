@@ -1,5 +1,9 @@
 import React from "react"
 
+interface Props {
+  style: Object;
+}
+
 export interface State {
   mouseOver: boolean;
   mouseDown: boolean;
@@ -10,7 +14,7 @@ export const initState: State = {
   mouseDown: false,
 }
 
-export const Github: React.FC<{}> = () => {
+export const Github: React.FC<Props> = ({ style }) => {
   const [ state, setState ] = React.useState(initState);
 
   let stopColor0: string, stopColor1: string;
@@ -25,7 +29,7 @@ export const Github: React.FC<{}> = () => {
     stopColor1 = "rgba(255,255,255,.1)"
   }
   return(
-    <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg" className="social" id="githubIcon">
+    <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg" className="social" id="githubIcon" style={style}>
       <title>GitHub icon</title>
       <linearGradient
         id="grad3"

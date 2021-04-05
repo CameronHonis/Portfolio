@@ -11,12 +11,14 @@ import { ProjectScreen } from "./ProjectScreen";
 import { SelectCircle } from "../svgComps/SelectCircle";
 import { ProjectAnnotations } from "./ProjectAnnotations";
 import { Arrow } from "./ProjectArrow";
+import { Helpers } from "../services/Helpers";
+
+type TweenData = [inCoeff: number, inOffset: number, outCoeff: number, outOffset: number];
 
 const introTerrainAnimDuration: number = 4;
-const tweenCoeff: number = .02;
-const tweenAngleOffset: number = 0.01;
-const tweenRadiusOffset: number = 0.02;
-const tweenLengthOffset: number = .02;
+const ringsRadiusTweenData: TweenData = [0, 2, 3, .2];
+const ringsAngleTweenData: TweenData = [.5, .5, .5, .5];
+const screenLengthTweenData: TweenData = [1, 1.5, 2, .5];
 const selectCirclesCount: number = 3;
 
 export const projectsArr: string[] = ["Pathfinder", "Spheres", "Algodesi"];
@@ -148,15 +150,15 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
     refs.projectScreen.length = 0;
     refs.projectScreen.ref.current.style.width = "0";
     if (refs.t) { return; }
-    const uiClock = () => {
+    const uiClock = (t0: number, t1: number) => {
+      const dt: number = (t1 - t0)/1000;
+      refs.t += dt;
       setTargets();
-      tweens();
+      tweens(dt);
       render();
-      setTimeout(() => {
-        refs.t += .03;
-        uiClock();
-      }, 0);
-    }; uiClock();
+      window.requestAnimationFrame(t2 => uiClock(t1, t2));
+    }
+    window.requestAnimationFrame(t0 => uiClock(t0, t0));
     // opacities
     setTimeout(() => {
       // shapes opacity
@@ -203,6 +205,7 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
     refs.projectAnnotation.current.style.opacity = "1";
     gsap.killTweensOf(refs.projectAnnotation.current, "opacity");
     gsap.to(refs.projectAnnotation.current, {opacity: 0, duration: 2, delay: 2});
+    refs.projectScreen.length = 0;
   },[state.projectIndex]); //eslint-disable-line
 
   React.useEffect(() => {
@@ -230,7 +233,13 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
       refs.projectScreen.lengthTargets[0][0] = .4;
       refs.projectScreen.lengthTargets[1][0] = .56;
     }
-    
+    if (widthHeightRatio > .66) {
+      refs.projectScreen.lengthTargets[0][0] = .5;
+      refs.projectScreen.lengthTargets[1][0] = .7;
+    } else {
+      refs.projectScreen.lengthTargets[0][0] = .35;
+      refs.projectScreen.lengthTargets[1][0] = .5;
+    }
   },[appState.viewportSnappedSize]); //eslint-disable-line
 
   const setTargets = () => {
@@ -258,7 +267,7 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
     return rtn;
   }
 
-  const tweens = () => {
+  const tweens = (dt: number) => {
     // ui rings tween
     if (refs.t > introTerrainAnimDuration + 1) {
       for (let ring of refs.rings) {
@@ -268,23 +277,32 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
           ring.angle += Math.sign(da)*2*Math.PI;
         }
         da = angleTarget - ring.angle;
-        ring.angle += Math.min(Math.abs(da), Math.max(-Math.abs(da), tweenCoeff*da + Math.sign(da)*tweenAngleOffset));
+        ring.angle += Helpers.clamp(dt*(ringsAngleTweenData[0]*da + Math.sign(da)*ringsAngleTweenData[1]), 
+          -Math.abs(da), Math.abs(da));
         let radiusTarget: number = 0;
         for (const [ rad, weight ] of ring.radiusTargets) {
           radiusTarget += rad*weight;
         }
         const dr: number = radiusTarget - ring.radius;
-        ring.radius += Math.min(Math.abs(dr), Math.max(-Math.abs(dr), tweenCoeff*dr + Math.sign(dr)*tweenRadiusOffset));
+        if (dr > 0) {
+          ring.radius += Math.min(dr, dt*(ringsRadiusTweenData[0]*dr + ringsRadiusTweenData[1]));
+        } else {
+          ring.radius += Math.max(dr, dt*(ringsRadiusTweenData[2]*dr - ringsRadiusTweenData[3]));
+        }
       }
     }
     //project screen tween
-    if (refs.t > introTerrainAnimDuration + 2) {
+    if (refs.t > introTerrainAnimDuration + 1.25) {
       let targetLength: number = 0;
       for (const [ length, weight ] of refs.projectScreen.lengthTargets) {
         targetLength += length*weight;
       }
       const dl: number = targetLength - refs.projectScreen.length;
-      refs.projectScreen.length += Math.min(Math.abs(dl), Math.max(-Math.abs(dl), tweenCoeff*dl + Math.sign(dl)*tweenLengthOffset));
+      if (dl > 0) {
+        refs.projectScreen.length += Math.min(dl, dt*(screenLengthTweenData[0]*dl + screenLengthTweenData[1]));
+      } else {
+        refs.projectScreen.length += Math.max(dl, dt*(screenLengthTweenData[2]*dl - screenLengthTweenData[3]));
+      }
     }
   }
 
@@ -298,11 +316,12 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
     const bodyHeight: number = window.innerHeight - headerHeight;
     //set opacities
     if (!refs.mainDivRefs[0].current) { return; }
-    if (!refs.mainDivRefs[1].current) { return; }
     if (!refs.mainDivRefs[2].current) { return; }
     refs.mainDivRefs[0].current.style.opacity = refs.opacities[0].toString();
-    refs.mainDivRefs[1].current.style.opacity = refs.opacities[1].toString();
     refs.mainDivRefs[2].current.style.opacity = refs.opacities[2].toString();
+    if (refs.mainDivRefs[1].current) {
+      refs.mainDivRefs[1].current.style.opacity = refs.opacities[1].toString();
+    }
     // set ring styles
     for (let ring of refs.rings) {
       if (!ring.ref.current) { continue; }
@@ -345,7 +364,20 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
       <SelectCircle circleIdx={i} totalCircles={selectCirclesCount} projectsState={state} setProjectsState={setState} key={i} />
     );
   }
-
+  let projectAnnotations: JSX.Element | undefined = undefined;
+  if (appState.viewportSnappedSize.y / appState.viewportSnappedSize.x < 1.25) {
+    projectAnnotations = <ProjectAnnotations projectsRefs={refs} projectsState={state} appState={appState}/>;
+  } else {
+    refs.annotations = [];
+  }
+  const projAnnoFontSize: number = Math.max(25, .035*appState.viewportSnappedSize.x);
+  const projAnnoWidth: number = 15*projAnnoFontSize;
+  let projAnnoBottom: number;
+  if (appState.viewportSnappedSize.x / appState.viewportSnappedSize.y > 1.25) {
+    projAnnoBottom = 120;
+  } else {
+    projAnnoBottom = 140;
+  }
   return(
     <section id="projects">
       <div id="svgUI" ref={refs.mainDivRefs[0]} style={{opacity: 0}}>
@@ -358,14 +390,16 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
         {selectCircles}
       </div>
       <div id="annotationsUI" ref={refs.mainDivRefs[1]} style={{opacity: 0}}>
-        <ProjectAnnotations projectsRefs={refs} projectsState={state} appState={appState}/>
-        <p id="projectAnnotation" ref={refs.projectAnnotation}>{projectsArr[state.projectIndex]}</p>
+        {projectAnnotations}
+        <p 
+          id="projectAnnotation" 
+          ref={refs.projectAnnotation} 
+          style={{fontSize: projAnnoFontSize, width: projAnnoWidth, bottom: projAnnoBottom}}
+        >{projectsArr[state.projectIndex]}</p>
       </div>
       <div id="screenUI" ref={refs.mainDivRefs[2]} style={{opacity: 0}}>
         <ProjectScreen projectIdx={state.projectIndex} projectRefs={refs} />
       </div>
-      <p id="debug0" style={{position:"absolute", top: "300px", left: "20px"}} ref={refs.debug0} />
-      <p id="debug1" style={{position:"absolute", top: "320px", left: "20px"}} ref={refs.debug1} />
     </section>
   );
 }

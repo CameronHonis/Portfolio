@@ -34,6 +34,16 @@ export const ProjectScreen: React.FC<Props> = ({ projectIdx, projectRefs }) => {
     }
   }
 
+  const mouseClick = (e: React.MouseEvent): void => {
+    if (projectIdx === 0) {
+      window.open("https://festive-easley-41b612.netlify.app/");
+    } else if (projectIdx === 1) {
+      window.open("https://priceless-noyce-a671fe.netlify.app/");
+    } else if (projectIdx === 2) {
+      window.open("https://github.com/CameronHonis/Algodesi");
+    }
+  }
+
   let image: string;
   if (projectIdx === 0) {
     image = project0png;
@@ -70,6 +80,7 @@ export const ProjectScreen: React.FC<Props> = ({ projectIdx, projectRefs }) => {
         id="projectScreenPath"
         onMouseOver={e => screenMouseOver(e)}
         onMouseLeave={e => screenMouseLeave(e)}
+        onClick={e => mouseClick(e)}
       />
     </svg>
   );

@@ -87,14 +87,12 @@ table {
   position: absolute;
   left: 1vw;
   top: 1vw;
-  font-size: 4.5vw;
 }
 
 #header h3 {
   position: absolute;
   left: 15vw;
   top: 6.5vw;
-  font-size: 2vw;
 }
 
 .headerButton {
@@ -133,15 +131,55 @@ table {
   left: 90vw;
 }
 
+#menuHamburger {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  right: 0;
+  padding: 12px;
+  cursor: pointer;
+}
+
+#headerButtons {
+  position: absolute;
+  width: 100%;
+  height: 25vh;
+  padding: 2vh 0;
+  background: rgb(10,10,10);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  visibility: hidden;
+  z-index: 3;
+}
+
+#headerButtons button {
+  background: rgba(0,0,0,0);
+  border: none;
+  width: 100%;
+  height: 7vh;
+  font-size: 4vw;
+  padding: 0;
+  outline: none;
+}
+
+#headerButtonsExit {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  z-index: 3;
+  visibility: hidden;
+}
+
 /* HEADER ^^^ */
 /* TERRAIN vvv */
 
-#terrain {
+#terrainCanvas {
   background: linear-gradient(
     180deg
     , rgb(97,97,112), rgb(15,15,30));
   width: 100vw;
-  height: calc(100vh - 10vw);
   position: absolute;
   z-index: -1;
 }
@@ -253,8 +291,13 @@ table {
   -ms-transform: translate(-50%, -100%);
   -o-transform: translate(-50%, -100%);
   left: 50vw;
-  top: calc(100% - 120px);
-  font-size: 2vw;
+  font-size: 3.5vw;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(90deg, rgba(255,255,255,0), 
+    rgba(255,255,255,.8) 40% 60%, rgba(255,255,255,0) 100%);
+  color: rgb(0,0,0);
+  mix-blend-mode: screen;
 }
 
 /* Projects ^^^ */
@@ -301,13 +344,13 @@ table {
   width: 18vw;
   height: 3.5vw;
   transform: translate(-50%, -50%);
-  top: 3vw;
+  top: 4vw;
 }
 
 .skillsTitle {
   position: absolute;
   transform: translate(-50%, -50%);
-  top: 3vw;
+  top: 4vw;
   font-size: 1.6vw;
 }
 
@@ -328,24 +371,30 @@ table {
 
 #contact {
   width: 100vw;
-  height: calc(100vh - 10vw);
   backdrop-filter: blur(4px);
 }
 
 #about {
   position: absolute;
-  font-size: 1.7vw;
-  text-transform: none;
-  line-height: 2.2vw;
   width: 72.5vw;
   left: 25vw;
   top: 10vw;
 }
 
+#about p {
+  display: inline;
+  font-size: 1.7vw;
+  text-transform: none;
+  line-height: 2.2vw;
+}
+
+#about div {
+  /* display: inline-block; */
+  float: left;
+}
+
 #avatarFrame {
   position: absolute;
-  width: 20vw;
-  height: 30vw;
   left: 2.5vw;
   top: 3vw;
 }
@@ -375,4 +424,12 @@ table {
 
 #linkedinIcon {
   left: 31vw;
+}
+
+#email {
+  position: absolute;
+}
+
+#phone {
+  position: absolute;
 }
