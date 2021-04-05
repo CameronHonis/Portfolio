@@ -1,7 +1,7 @@
 import React from "react";
 import project0png from "../img/project0e.png";
 import project1png from "../img/project1b.png";
-import project2png from "../img/project2.png";
+import project2png from "../img/project2b.png";
 import { Refs as ProjectRefs } from "./Projects";
 
 export interface Props {
