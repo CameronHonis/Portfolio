@@ -28,7 +28,7 @@ export const SkillFrame: React.FC<Props> = ({ reff, idx, skillsRefs, groupIdx })
   } else if (skillsRefs.skills[idx].cat === SkillCategory.Other) {
     skillOutlineLeft = 5*window.innerWidth/6 + "px";
   } else { throw new Error(); }
-  const skillOutlineTop: string = (groupIdx+2)*.115*bodyHeight + "px";
+  const skillOutlineTop: string = (groupIdx+2)*.115*bodyHeight + headerHeight + "px";
   return(
     <div id="skillFrame" ref={reff} style={{opacity: 0, left: skillOutlineLeft, top: skillOutlineTop}}>
       {skillsRefs.skills[idx].iconSVG}

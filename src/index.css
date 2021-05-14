@@ -101,9 +101,9 @@ table {
   color: white;
   transform: translate(-50%, -100%);
   -webkit-transform: translate(-50%, -100%);
-  -moz-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  -o-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -100%);
+  -ms-transform: translate(-50%, -100%);
+  -o-transform: translate(-50%, -100%);
   height: 5vw;
   padding-top: 1.5vw;
   padding-left: 2vw;
@@ -151,7 +151,7 @@ table {
   justify-content: space-between;
   align-items: center;
   visibility: hidden;
-  z-index: 3;
+  z-index: 4;
 }
 
 #headerButtons button {
@@ -285,6 +285,7 @@ table {
 
 #projectAnnotation {
   position: absolute;
+  z-index: 5;
   transform: translate(-50%, -100%);
   -webkit-transform: translate(-50%, -100%);
   -moz-transform: translate(-50%, -100%);
@@ -299,14 +300,20 @@ table {
   color: rgb(0,0,0);
   mix-blend-mode: screen;
 }
+@media (max-width: 1000px) {
+  #projectAnnotation {
+    font-size: 6vw;
+  }
+}
 
 /* Projects ^^^ */
 /* Skills vvv */
 
 #skills {
+  position: "absolute";
+  top: 0;
   width: 100vw;
-  height: calc(100vh - 10vw);
-  backdrop-filter: blur(4px);
+  height: 100vh;
 }
 
 #skillFrame {
@@ -321,6 +328,10 @@ table {
 #skillFrame p {
   position: absolute;
   transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
   left: 13vw;
   top: 2vw;
   font-size: 1.5vw;
@@ -344,13 +355,21 @@ table {
   width: 18vw;
   height: 3.5vw;
   transform: translate(-50%, -50%);
-  top: 4vw;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  top: 14vw;
 }
 
 .skillsTitle {
   position: absolute;
   transform: translate(-50%, -50%);
-  top: 4vw;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  top: 14vw;
   font-size: 1.6vw;
 }
 
@@ -370,15 +389,14 @@ table {
 /* Contact vvv */
 
 #contact {
+  position: "absolute";
+  top: 0;
   width: 100vw;
-  backdrop-filter: blur(4px);
+  height: 100vh;
 }
 
 #about {
   position: absolute;
-  width: 72.5vw;
-  left: 25vw;
-  top: 10vw;
 }
 
 #about p {
@@ -396,7 +414,7 @@ table {
 #avatarFrame {
   position: absolute;
   left: 2.5vw;
-  top: 3vw;
+  top: 12.5vw;
 }
 
 #avatar {
@@ -420,10 +438,12 @@ table {
 
 #githubIcon {
   left: 25vw;
+  top: 12.5vw;
 }
 
 #linkedinIcon {
   left: 31vw;
+  top: 12.5vw;
 }
 
 #email {

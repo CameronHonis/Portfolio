@@ -142,6 +142,7 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
   let { current: refs } = React.useRef<Refs>(initRefs);
 
   React.useEffect(() => {
+    // ring inits
     for (const ring of refs.rings) {
       ring.radius = 0;
       ring.ref.current.style.width = "0";
@@ -159,6 +160,40 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
       window.requestAnimationFrame(t2 => uiClock(t1, t2));
     }
     window.requestAnimationFrame(t0 => uiClock(t0, t0));
+    document.addEventListener("mousemove", (e: MouseEvent) => {
+      const widthHeightRatio: number = appState.viewportSnappedSize.x/appState.viewportSnappedSize.y;
+      if (widthHeightRatio > 1.5) {
+        const maxShift: number = .05*Math.max(window.innerWidth, window.innerHeight);
+        const headerHeight: number = .1*window.innerHeight;
+        const bodyHeight: number = window.innerHeight - headerHeight;
+        const baseTop: number = headerHeight + .5*bodyHeight;
+        const baseLeft: number = .5*window.innerWidth;
+        const maxMouseDis: number = .5*Math.sqrt(window.innerWidth*window.innerWidth + window.innerHeight*window.innerHeight);
+        const currMouseDisX: number = e.clientX - .5*window.innerWidth;
+        const currMouseDisY: number = e.clientY - .5*window.innerHeight;
+        const currMouseDis: number = Math.sqrt(currMouseDisX*currMouseDisX + currMouseDisY*currMouseDisY);
+        const relMouseDis: number = currMouseDis / maxMouseDis;
+        const currMouseAngle: number = Math.atan2(currMouseDisY, currMouseDisX);
+        const shiftX: number = maxShift*relMouseDis*Math.cos(currMouseAngle);
+        const shiftY: number = maxShift*relMouseDis*Math.sin(currMouseAngle);
+        if (refs.rings[0].ref.current) {
+          refs.rings[0].ref.current.style.left = baseLeft + .75*shiftX + "px";
+          refs.rings[0].ref.current.style.top = baseTop + .75*shiftY + "px";
+        }
+        if (refs.rings[1].ref.current) {
+          refs.rings[1].ref.current.style.left = baseLeft + .2*shiftX + "px";
+          refs.rings[1].ref.current.style.top = baseTop + .2*shiftY + "px";
+        }
+        if (refs.rings[2].ref.current) {
+          refs.rings[2].ref.current.style.left = baseLeft + shiftX + "px";
+          refs.rings[2].ref.current.style.top = baseTop + shiftY + "px";
+        }
+        if (refs.rings[3].ref.current) {
+          refs.rings[3].ref.current.style.left = baseLeft + 0*shiftX + "px";
+          refs.rings[3].ref.current.style.top = baseTop + 0*shiftY + "px";
+        }
+      }
+    });
     // opacities
     setTimeout(() => {
       // shapes opacity
@@ -211,25 +246,25 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
   React.useEffect(() => {
     const widthHeightRatio: number = appState.viewportSnappedSize.x/appState.viewportSnappedSize.y;
     if (widthHeightRatio > 1.5) {
-      refs.rings[0].radiusTargets[0][0] = .3;
+      refs.rings[0].radiusTargets[0][0] = .42;
       refs.rings[0].radiusTargets[1][0] = .6;
-      refs.rings[1].radiusTargets[0][0] = .25;
-      refs.rings[1].radiusTargets[1][0] = .5;
-      refs.rings[2].radiusTargets[0][0] = .4;
+      refs.rings[1].radiusTargets[0][0] = .3;
+      refs.rings[1].radiusTargets[1][0] = .45;
+      refs.rings[2].radiusTargets[0][0] = .6;
       refs.rings[2].radiusTargets[1][0] = .8;
-      refs.rings[3].radiusTargets[0][0] = .175;
-      refs.rings[3].radiusTargets[1][0] = .35;
+      refs.rings[3].radiusTargets[0][0] = .2;
+      refs.rings[3].radiusTargets[1][0] = .275;
       refs.projectScreen.lengthTargets[0][0] = .5;
       refs.projectScreen.lengthTargets[1][0] = .7;
     } else {
-      refs.rings[0].radiusTargets[0][0] = .21;
-      refs.rings[0].radiusTargets[1][0] = .42;
-      refs.rings[1].radiusTargets[0][0] = .18;
-      refs.rings[1].radiusTargets[1][0] = .36;
-      refs.rings[2].radiusTargets[0][0] = .28;
-      refs.rings[2].radiusTargets[1][0] = .56;
-      refs.rings[3].radiusTargets[0][0] = .125;
-      refs.rings[3].radiusTargets[1][0] = .25;
+      refs.rings[0].radiusTargets[0][0] = .3;
+      refs.rings[0].radiusTargets[1][0] = .45;
+      refs.rings[1].radiusTargets[0][0] = .25;
+      refs.rings[1].radiusTargets[1][0] = .35;
+      refs.rings[2].radiusTargets[0][0] = .43;
+      refs.rings[2].radiusTargets[1][0] = .8;
+      refs.rings[3].radiusTargets[0][0] = .15;
+      refs.rings[3].radiusTargets[1][0] = .175;
       refs.projectScreen.lengthTargets[0][0] = .4;
       refs.projectScreen.lengthTargets[1][0] = .56;
     }

@@ -48,7 +48,7 @@ export const Contact: React.FC<Props> = ({ appState, appStateDispatch }) => {
     frameWidth = .2*appState.viewportSnappedSize.x;
     frameHeight = .3*appState.viewportSnappedSize.x;
     textLeft = .25*appState.viewportSnappedSize.x;
-    textTop = .1*appState.viewportSnappedSize.x;
+    textTop = .2*appState.viewportSnappedSize.x;
     cushionWidth = 0;
     cushionHeight = 0;
     socialLeft = .25*appState.viewportSnappedSize.x;
@@ -61,7 +61,7 @@ export const Contact: React.FC<Props> = ({ appState, appStateDispatch }) => {
     frameWidth = .4*appState.viewportSnappedSize.x;
     frameHeight = .6*appState.viewportSnappedSize.x;
     textLeft = .025*appState.viewportSnappedSize.x;
-    textTop = .2*appState.viewportSnappedSize.x;
+    textTop = .3*appState.viewportSnappedSize.x;
     cushionWidth = .45*appState.viewportSnappedSize.x;
     cushionHeight = (.65 - .2)*appState.viewportSnappedSize.x;
     socialLeft = .475*appState.viewportSnappedSize.x;
