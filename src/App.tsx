@@ -1,7 +1,7 @@
 import React from "react";
 import { Header } from "./components/Header";
 import { Terrain } from "./components/Terrain";
-import { Projects } from "./components/Projects";
+import { ProjectsFC } from "./components/ProjectsFC";
 import { TriEditor } from "./TriEditor";
 import { V2 } from "./models/V2";
 import { Skills } from "./components/Skills";
@@ -80,7 +80,7 @@ export const App: React.FC = () => {
 
   let bodyComp: JSX.Element;
   if (appState.section === Section.Projects) {
-    bodyComp = <Projects appState={appState} appStateDispatch={appStateDispatch} />;
+    bodyComp = <ProjectsFC appState={appState} appStateDispatch={appStateDispatch} />;
   } else if (appState.section === Section.Skills) {
     bodyComp = <Skills />;
   } else if (appState.section === Section.Contact) {

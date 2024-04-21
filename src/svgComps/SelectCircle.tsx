@@ -1,6 +1,6 @@
 import React from "react";
 import { Helpers } from "../services/Helpers";
-import { State as ProjectsState } from "../components/Projects";
+import { State as ProjectsState } from "../components/ProjectsFC";
 
 export interface Props {
   circleIdx: number;

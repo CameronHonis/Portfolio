@@ -12,6 +12,7 @@ import { SelectCircle } from "../svgComps/SelectCircle";
 import { ProjectAnnotations } from "./ProjectAnnotations";
 import { Arrow } from "./ProjectArrow";
 import { Helpers } from "../services/Helpers";
+import {Projects} from "../models/Projects";
 
 type TweenData = [inCoeff: number, inOffset: number, outCoeff: number, outOffset: number];
 
@@ -20,8 +21,6 @@ const ringsRadiusTweenData: TweenData = [0, 2, 3, .2];
 const ringsAngleTweenData: TweenData = [.5, .5, .5, .5];
 const screenLengthTweenData: TweenData = [1, 1.5, 2, .5];
 const selectCirclesCount: number = 3;
-
-export const projectsArr: string[] = ["Pathfinder", "Spheres", "Algodesi"];
 
 export interface Props {
   appState: AppState;
@@ -136,7 +135,7 @@ export const initState: State = {
 
 }
 
-export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
+export const ProjectsFC: React.FC<Props> = ({ appState, appStateDispatch }) => {
 
   const [ state, setState ] = React.useState<State>(initState); //eslint-disable-line
   let { current: refs } = React.useRef<Refs>(initRefs);
@@ -430,7 +429,7 @@ export const Projects: React.FC<Props> = ({ appState, appStateDispatch }) => {
           id="projectAnnotation" 
           ref={refs.projectAnnotation} 
           style={{fontSize: projAnnoFontSize, width: projAnnoWidth, bottom: projAnnoBottom}}
-        >{projectsArr[state.projectIndex]}</p>
+        >{Projects[state.projectIndex].title}</p>
       </div>
       <div id="screenUI" ref={refs.mainDivRefs[2]} style={{opacity: 0}}>
         <ProjectScreen projectIdx={state.projectIndex} projectRefs={refs} />

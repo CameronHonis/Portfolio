@@ -191,6 +191,7 @@ table {
   position: absolute;
   top: 55vh;
   left: 50vw;
+  pointer-events: none;
 }
 
 #projectScreenSVG {
@@ -310,10 +311,11 @@ table {
 /* Skills vvv */
 
 #skills {
-  position: "absolute";
+  position: absolute;
   top: 0;
   width: 100vw;
   height: 100vh;
+  pointer-events: none;
 }
 
 #skillFrame {
@@ -332,9 +334,11 @@ table {
   -moz-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
   -o-transform: translate(-50%, -50%);
+  width: 16rem;
   left: 13vw;
   top: 2vw;
-  font-size: 1.5vw;
+  font-size: 1.5rem;
+  text-align: center;
 }
 
 .skillOutline {
@@ -389,10 +393,11 @@ table {
 /* Contact vvv */
 
 #contact {
-  position: "absolute";
+  position: absolute;
   top: 0;
   width: 100vw;
   height: 100vh;
+  pointer-events: none;
 }
 
 #about {

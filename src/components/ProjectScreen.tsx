@@ -1,8 +1,6 @@
 import React from "react";
-import project0png from "../img/project0e.png";
-import project1png from "../img/project1b.png";
-import project2png from "../img/project2b.png";
-import { Refs as ProjectRefs } from "./Projects";
+import { Refs as ProjectRefs } from "./ProjectsFC";
+import {Projects} from "../models/Projects";
 
 export interface Props {
   projectIdx: number;
@@ -35,25 +33,10 @@ export const ProjectScreen: React.FC<Props> = ({ projectIdx, projectRefs }) => {
   }
 
   const mouseClick = (e: React.MouseEvent): void => {
-    if (projectIdx === 0) {
-      window.open("https://festive-easley-41b612.netlify.app/");
-    } else if (projectIdx === 1) {
-      window.open("https://priceless-noyce-a671fe.netlify.app/");
-    } else if (projectIdx === 2) {
-      window.open("https://github.com/CameronHonis/Algodesi");
-    }
+    window.open(Projects[projectIdx].url);
   }
 
-  let image: string;
-  if (projectIdx === 0) {
-    image = project0png;
-  } else if (projectIdx === 1) {
-    image = project1png;
-  } else if (projectIdx === 2) {
-    image = project2png;
-  } else {
-    throw new Error();
-  }
+  const image = Projects[projectIdx].image;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

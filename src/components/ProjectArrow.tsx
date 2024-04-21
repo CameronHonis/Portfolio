@@ -2,7 +2,8 @@ import React from "react";
 import { AppState } from "../App";
 import { Helpers } from "../services/Helpers";
 import { V2 } from "../models/V2";
-import { projectsArr, State as ProjectsState } from "./Projects";
+import { State as ProjectsState } from "./ProjectsFC";
+import {Projects} from "../models/Projects";
 
 export interface Props {
   isLeft: boolean;
@@ -69,7 +70,7 @@ export const Arrow: React.FC<Props> = ({ isLeft, projectsState, setProjectsState
   } else {
     arrowTopPos = "calc(100% - 80px)";
   }
-  const nextIdx: number = Helpers.fitIndex(projectsState.projectIndex + (isLeft ? -1 : 1), projectsArr.length);
+  const nextIdx: number = Helpers.fitIndex(projectsState.projectIndex + (isLeft ? -1 : 1), Projects.length);
   let arrowMatrix: string, arrowLeftPos: string, arrowSize: V2, annotationLeftPos: string, annotationTopPos: string;
   if (isLeft) {
     if (widthHeightRatio > 1.5) {
@@ -138,7 +139,7 @@ export const Arrow: React.FC<Props> = ({ isLeft, projectsState, setProjectsState
         className="arrowAnnotation"
         style={{left: annotationLeftPos, top: annotationTopPos}}
         ref={refs.annotationRef}
-      >{projectsArr[nextIdx]}</p>
+      >{Projects[nextIdx].title}</p>
     </div>
   );
 }
